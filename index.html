@@ -3,43 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Room - Sync Fix</title>
+<title>Mini Room - Final Sync Fix</title>
 <style>
 * { box-sizing: border-box; }
 body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #121212; color: white; overflow: hidden; }
-
-/* LOGIN */
-#loginScreen { 
-    height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; 
-    background-image: url("https://i.pinimg.com/originals/d5/84/0b/d5840b194bc468e606984aa99f6558c8.gif"); 
-    background-size: cover; background-position: center; position: relative;
-}
-#loginScreen::before { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
-#loginScreen * { position: relative; z-index: 2; }
+#loginScreen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #1a1a1a; position: relative; }
 #loginScreen input { margin: 10px; padding: 12px; width: 260px; border-radius: 8px; border: none; }
-
-/* LAYOUT */
 .app { height: 100vh; display: none; flex-direction: row; background: #1e2134; }
 .sidebar { width: 180px; background: #2b2b3a; border-right: 1px solid #444; padding: 15px; overflow-y: auto; }
-@media (max-width: 600px) { .sidebar { display: none; } }
-
 .chat-main { flex: 1; display: flex; flex-direction: column; position: relative; height: 100vh; }
-.header { height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; background: #2b2b3a; border-bottom: 1px solid #444; flex-shrink: 0; }
-
-#roleCard { display: none; padding: 12px; text-align: center; font-weight: bold; font-size: 1.1rem; border-bottom: 3px solid rgba(0,0,0,0.5); flex-shrink: 0; }
-
+.header { height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; background: #2b2b3a; border-bottom: 1px solid #444; }
+#roleCard { display: none; padding: 12px; text-align: center; font-weight: bold; font-size: 1.1rem; border-bottom: 3px solid rgba(0,0,0,0.5); }
 #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-.message { padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.05); word-wrap: break-word; }
-.sys-msg { background: #ffcc00 !important; color: black !important; font-weight: bold; padding: 10px; border-radius: 8px; text-align: center; }
-
-.inputBar { display: flex; padding: 10px; background: #2b2b3a; gap: 8px; flex-shrink: 0; }
-.inputBar input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #3d3d4d; color: white; font-size: 16px; }
+.message { padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.05); }
+.sys-msg { background: #ffcc00 !important; color: black !important; font-weight: bold; text-align: center; border-radius: 8px; }
+.inputBar { display: flex; padding: 10px; background: #2b2b3a; gap: 8px; }
+.inputBar input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #3d3d4d; color: white; }
 button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; padding: 10px 15px; }
-
-#gameConsent { 
-    display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); 
-    background: white; color: black; padding: 25px; border-radius: 15px; z-index: 9999; text-align: center; width: 90%; max-width: 320px; box-shadow: 0 0 50px black;
-}
+#gameConsent { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: white; color: black; padding: 25px; border-radius: 15px; z-index: 9999; text-align: center; width: 320px; box-shadow: 0 0 50px black; }
 </style>
 </head>
 <body>
@@ -47,7 +28,7 @@ button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; p
 <div id="loginScreen">
   <h2 style="color:white;">MINI ROOM</h2>
   <input id="usernameInput" placeholder="Username...">
-  <input type="color" id="colorPicker" value="#3498db" style="width: 260px; height: 40px;">
+  <input type="color" id="colorPicker" value="#3498db">
   <button onclick="login()" style="background:#2196f3; color:white; width: 260px;">JOIN</button>
 </div>
 
@@ -58,8 +39,8 @@ button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; p
   </div>
   <div class="chat-main">
     <div class="header">
-        <button onclick="resetGameManually()" style="background:#555; color:white; font-size:10px; padding:4px;">RESET</button>
-        <div><span id="userDisplay" style="margin-right:8px; font-size:0.9rem;"></span><button onclick="logout()" style="background:#f44336; color:white; padding:4px 8px; font-size:0.8rem;">Leave</button></div>
+        <button onclick="resetGameManually()" style="background:#555; color:white; font-size:10px;">RESET</button>
+        <div><span id="userDisplay"></span> <button onclick="logout()" style="background:#f44336; color:white; padding:4px 8px;">Leave</button></div>
     </div>
     <div id="roleCard"></div>
     <div id="messages"></div>
@@ -67,36 +48,45 @@ button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; p
       <input id="messageInput" placeholder="Message..." autocomplete="off">
       <button id="sendBtn" style="background:#2196f3; color:white;">SEND</button>
     </div>
-    <div style="padding:10px; text-align:center; background:#121212; flex-shrink:0;">
-      <button onclick="startGameRequest()" style="background:#673ab7; color:white; border-radius:25px; width:100%; max-width:200px;">😈 START GAME</button>
+    <div style="padding:10px; text-align:center; background:#121212;">
+      <button onclick="startGameRequest()" style="background:#673ab7; color:white; width:100%; max-width:200px;">😈 START GAME</button>
     </div>
   </div>
 </div>
 
 <div id="gameConsent">
-    <h3 style="margin-top:0;">Start Game?</h3>
-    <p id="voteStatus" style="font-weight:bold; color:#673ab7;">Waiting...</p>
-    <div style="display:flex; gap:10px; margin-top:20px;">
-        <button onclick="respondConsent(true)" style="background:#4caf50; color:white; flex:1; height:50px;">YES</button>
-        <button onclick="respondConsent(false)" style="background:#f44336; color:white; flex:1; height:50px;">NO</button>
+    <h3>Start Game?</h3>
+    <p id="voteStatus">Waiting...</p>
+    <div style="display:flex; gap:10px;">
+        <button id="yesBtn" onclick="respondConsent(true)" style="background:#4caf50; color:white; flex:1;">YES</button>
+        <button onclick="respondConsent(false)" style="background:#f44336; color:white; flex:1;">NO</button>
     </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyA3wCv1DIdjlPS-zEVQJXhjYsiC3G2dBJY", authDomain: "mini-chatroom-5710b.firebaseapp.com", projectId: "mini-chatroom-5710b" };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Ensures every browser instance has a unique ID
 let myID = localStorage.getItem("myID") || Math.random().toString(36).slice(2, 11);
 localStorage.setItem("myID", myID);
 let username = localStorage.getItem("username") || "";
 let myColor = localStorage.getItem("userColor") || "#ffffff";
+let isImposter = false;
+let killAlerted = false;
 
 async function postSys(txt) {
     await addDoc(collection(db, "messages"), { user: "SYSTEM", text: txt, time: Date.now(), isSystem: true });
+}
+
+function postLocalSys(txt) {
+    const mDiv = document.getElementById("messages");
+    mDiv.innerHTML += `<div class="message sys-msg" style="background:#ff3d00 !important; color:white !important; border: 2px solid white;">[PRIVATE] ${txt}</div>`;
+    mDiv.scrollTop = mDiv.scrollHeight;
 }
 
 window.login = async () => {
@@ -105,63 +95,129 @@ window.login = async () => {
     localStorage.setItem("username", name);
     localStorage.setItem("userColor", document.getElementById("colorPicker").value);
     await setDoc(doc(db, "users", myID), { username: name, color: document.getElementById("colorPicker").value, lastSeen: Date.now(), id: myID });
+    await postSys(`👋 <b>${name}</b> joined the room!`);
     location.reload();
 };
 
 window.logout = async () => {
+    await postSys(`🏃 <b>${username}</b> left.`);
     await deleteDoc(doc(db, "users", myID));
     localStorage.clear();
     location.reload();
 };
 
-if (username) {
-    setInterval(async () => { await updateDoc(doc(db, "users", myID), { lastSeen: Date.now() }); }, 10000);
-}
+// --- CORE FIX: UNIQUE READY SYSTEM ---
+window.startGameRequest = async () => {
+    const readySnap = await getDocs(collection(db, "readyPlayers"));
+    const batch = writeBatch(db);
+    readySnap.forEach(d => batch.delete(d.ref));
+    await batch.commit();
 
-onSnapshot(collection(db, "users"), (snap) => {
-    const now = Date.now();
-    const listDiv = document.getElementById("playerList");
-    let count = 0;
-    listDiv.innerHTML = "";
-    snap.forEach(d => {
-        const u = d.data();
-        if (now - u.lastSeen < 30000) {
-            count++;
-            listDiv.innerHTML += `<div class="player-item" style="color:${u.color}">● ${u.username}</div>`;
-        }
-    });
-    document.getElementById("playerCount").textContent = count;
+    await setDoc(doc(db, "game", "request"), { active: true, triggered: false, time: Date.now() });
+    await postSys("🔔 <b>GAME REQUESTED!</b> Please click YES to start.");
+};
+
+window.respondConsent = async (val) => {
+    if(val === true) {
+        // Save using myID as key so multiple users don't overwrite each other
+        await setDoc(doc(db, "readyPlayers", myID), { name: username, ready: true });
+        await postSys(`✅ <b>${username}</b> is READY!`);
+    }
+    document.getElementById("gameConsent").style.display = "none";
+};
+
+onSnapshot(doc(db, "game", "request"), (snap) => {
+    const data = snap.data();
+    if (data && data.active && !data.triggered) {
+        getDoc(doc(db, "readyPlayers", myID)).then(d => {
+            if(!d.exists()) document.getElementById("gameConsent").style.display = "block";
+        });
+    } else {
+        document.getElementById("gameConsent").style.display = "none";
+    }
 });
 
-// --- THE REPAIR: ROLE SYNC ---
+onSnapshot(collection(db, "readyPlayers"), async (snap) => {
+    const count = snap.size;
+    document.getElementById("voteStatus").textContent = `${count} Players Ready`;
+
+    const reqSnap = await getDoc(doc(db, "game", "request"));
+    if (count >= 3 && reqSnap.exists() && !reqSnap.data().triggered) {
+        const playerIds = snap.docs.map(d => d.id).sort();
+        if (myID === playerIds[0]) {
+            await updateDoc(doc(db, "game", "request"), { triggered: true });
+            await postSys("🚨 <b>3 PLAYERS READY!</b> Game starting...");
+            
+            setTimeout(async () => {
+                const uSnap = await getDocs(collection(db, "users"));
+                const players = [];
+                uSnap.forEach(u => players.push(u.data().username));
+                
+                const imposter = players[Math.floor(Math.random() * players.length)];
+                const topics = ["Roblox", "YouTube", "Food", "School", "Movies"];
+                
+                await setDoc(doc(db, "game", "session"), { 
+                    imposter, 
+                    topic: topics[Math.floor(Math.random() * topics.length)], 
+                    rolesActive: true, 
+                    round: 1 
+                });
+                await updateDoc(doc(db, "game", "request"), { active: false });
+            }, 3000);
+        }
+    }
+});
+
+// --- GAMEPLAY LOGIC ---
 onSnapshot(doc(db, "game", "session"), (snap) => {
     const data = snap.data();
     const card = document.getElementById("roleCard");
-    if (data && data.rolesActive === true) {
+    if (data && data.rolesActive) {
         card.style.display = "block";
-        // Check if CURRENT USER is the imposter stored in the DB
-        const isImposter = (username === data.imposter);
+        isImposter = (username === data.imposter);
         if (isImposter) {
             card.style.background = "#b71c1c";
-            card.innerHTML = `😈 YOU ARE THE IMPOSTER! <br><small>Blend in with the others!</small>`;
+            card.innerHTML = `😈 YOU ARE THE IMPOSTER!`;
+            if(data.round === 2 && !killAlerted) {
+                postLocalSys("🔪 ROUND 2: Use <b>/kill username</b> privately!");
+                killAlerted = true;
+            }
         } else {
             card.style.background = "#2e7d32";
-            card.innerHTML = `😇 YOU ARE A CIVILIAN! <br>TOPIC: ${data.topic}`;
+            card.innerHTML = `😇 CIVILIAN | TOPIC: ${data.topic}`;
         }
     } else {
         card.style.display = "none";
+        killAlerted = false;
     }
 });
 
 window.sendMessage = async () => {
     const input = document.getElementById("messageInput");
-    if (!input.value.trim()) return;
-    await addDoc(collection(db, "messages"), { user: username, text: input.value, time: Date.now(), color: myColor });
-    input.value = "";
+    const text = input.value.trim();
+    if (!text) return;
+
+    if (text.startsWith("/vote ")) {
+        const target = text.replace("/vote ", "");
+        input.value = "";
+        await postSys(`🗳️ <b>${username}</b> voted for <b>${target}</b>!`);
+    } else if (text.startsWith("/kill ")) {
+        const target = text.replace("/kill ", "");
+        input.value = "";
+        const gSnap = await getDoc(doc(db, "game", "session"));
+        if (isImposter && gSnap.data().round >= 2) {
+            await postSys(`🩸 <b>ELIMINATION:</b> ${target} was killed!`);
+        } else {
+            postLocalSys("❌ You cannot kill yet.");
+        }
+    } else {
+        await addDoc(collection(db, "messages"), { user: username, text: text, time: Date.now(), color: myColor });
+        input.value = "";
+    }
 };
 
-document.getElementById("messageInput").addEventListener("keydown", (e) => { if (e.key === "Enter") window.sendMessage(); });
-document.getElementById("sendBtn").addEventListener("click", window.sendMessage);
+document.getElementById("sendBtn").onclick = window.sendMessage;
+document.getElementById("messageInput").onkeydown = (e) => { if(e.key === "Enter") window.sendMessage(); };
 
 onSnapshot(query(collection(db, "messages"), orderBy("time")), (snap) => {
     const mDiv = document.getElementById("messages");
@@ -173,70 +229,27 @@ onSnapshot(query(collection(db, "messages"), orderBy("time")), (snap) => {
     mDiv.scrollTop = mDiv.scrollHeight;
 });
 
-window.resetGameManually = async () => {
-    await setDoc(doc(db, "game", "session"), { rolesActive: false, imposter: "", topic: "" });
-    await setDoc(doc(db, "game", "request"), { active: false });
-};
-
-let isProcessing = false;
-window.startGameRequest = async () => {
-    isProcessing = false;
-    await setDoc(doc(db, "game", "session"), { rolesActive: false });
-    await setDoc(doc(db, "game", "request"), { active: true, responses: {}, triggered: false });
-};
-
-window.respondConsent = async (yes) => {
-    const ref = doc(db, "game", "request");
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return;
-    let resp = snap.data().responses || {};
-    resp[myID] = yes;
-    await updateDoc(ref, { responses: resp });
-};
-
-onSnapshot(doc(db, "game", "request"), async (snap) => {
-    const data = snap.data();
-    if (!data || !data.active) { document.getElementById("gameConsent").style.display = "none"; return; }
-    const responses = data.responses || {};
-    const yesCount = Object.values(responses).filter(v => v === true).length;
-    document.getElementById("voteStatus").textContent = `${yesCount} / 3 Ready`;
-    document.getElementById("gameConsent").style.display = responses[myID] !== undefined ? "none" : "block";
-
-    if (yesCount >= 3 && !data.triggered && !isProcessing) {
-        isProcessing = true;
-        const firstId = Object.keys(responses)[0];
-        if (myID === firstId) {
-            await updateDoc(doc(db, "game", "request"), { triggered: true });
-            await postSys("🚨 3 PLAYERS READY! <br>Roles reveal in 30 SECONDS.");
-        }
-        
-        // Changed to 30 seconds to make it faster for testing
-        setTimeout(async () => {
-            if (myID === firstId) {
-                const topics = ["Haewon's toilet", "Roblox", "YouTube", "Jay's panties", "Gaspy's femboy", "dildo", "Star's cat furry", "Phone"];
-                const uSnap = await getDocs(collection(db, "users"));
-                const players = [];
-                const now = Date.now();
-                uSnap.forEach(u => { if (now - u.data().lastSeen < 30000) players.push(u.data().username); });
-
-                if (players.length > 0) {
-                    const selectedImposter = players[Math.floor(Math.random() * players.length)];
-                    const selectedTopic = topics[Math.floor(Math.random() * topics.length)];
-                    
-                    // Update the global session for everyone
-                    await setDoc(doc(db, "game", "session"), { 
-                        imposter: selectedImposter, 
-                        topic: selectedTopic, 
-                        rolesActive: true 
-                    });
-                    await updateDoc(doc(db, "game", "request"), { active: false });
-                    await postSys("🎭 <b>ROLES REVEALED!</b> Check the top bar.");
-                }
-            }
-            isProcessing = false; 
-        }, 30000); 
-    }
+onSnapshot(collection(db, "users"), (snap) => {
+    const listDiv = document.getElementById("playerList");
+    let count = 0;
+    listDiv.innerHTML = "";
+    snap.forEach(d => {
+        const u = d.data();
+        count++;
+        listDiv.innerHTML += `<div style="color:${u.color}; padding: 2px 0;">● ${u.username}</div>`;
+    });
+    document.getElementById("playerCount").textContent = count;
 });
+
+window.resetGameManually = async () => {
+    await setDoc(doc(db, "game", "session"), { rolesActive: false, round: 1 });
+    await setDoc(doc(db, "game", "request"), { active: false });
+    const readySnap = await getDocs(collection(db, "readyPlayers"));
+    const batch = writeBatch(db);
+    readySnap.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    await postSys("🧹 Room reset.");
+};
 
 if (username) {
     document.getElementById("chatApp").style.display = "flex";
@@ -246,4 +259,4 @@ if (username) {
 }
 </script>
 </body>
-</html>
+</html>s
