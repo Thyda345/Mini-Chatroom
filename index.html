@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Chat</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #222;
+}
+
+#loginScreen {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    background-image: url("https://i.pinimg.com/originals/d5/84/0b/d5840b194bc468e606984aa99f6558c8.gif");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    position: relative;
+}
+
+/* Dark overlay for readability */
+#loginScreen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1;
+}
+
+/* Make text above overlay */
+#loginScreen * {
+    position: relative;
+    z-index: 2;
+    color: white;
+}
+
+#loginScreen h2 {
+    margin-bottom: 20px;
+}
+
+#loginScreen input {
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 10px;
+    width: 220px;
+    border: none;
+    border-radius: 4px;
+    color: #222;
+}
+
+#loginScreen button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    background-color: #2196f3;
+    color: white;
+
+}
+
+.app {
+    height: 100vh;
+    display: none;
+    flex-direction: column;
+    background: #1e2134;
+}
+
+.header {
+    background: blue;
+    color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+#messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.message {
+    margin-bottom: 6px;
+    color: white;
+}
+
+.inputBar {
+    display: flex;
+    padding: 10px;
+    background: #eee;
+}
+
+.inputBar input {
+    flex: 1;
+    padding: 8px;
+}
+
+.gameBar{
+  padding: 6px;
+  background: #ddd;
+  text-align: center;
+}
+.gameBar button:hover{
+  background: red;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+    <h2>Join Chat</h2>
+    <input id="usernameInput" placeholder="Enter username" />
+    <button onclick="login()">Join</button>
+</div>
+
+
+
+
+<!-- CHAT APP -->
+<div class="app" id="chatApp">
+    <div class="header">
+        <span id="roomName">Unstable</span>
+        <span id="userDisplay"></span>
+
+        <button onclick="logout()" style="margin-left:10px;">Change Username</button>
+    </div>
+
+    <div id="messages"></div>
+
+    <div class="inputBar">
+        <input id="messageInput" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <div class="gameBar">
+      <button onclick="startImposterGame()">😈 Imposter </button>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  doc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA3wCv1DIdjlPS-zEVQJXhjYsiC3G2dBJY",
+  authDomain: "mini-chatroom-5710b.firebaseapp.com",
+  projectId: "mini-chatroom-5710b",
+  storageBucket: "mini-chatroom-5710b.firebasestorage.app",
+  messagingSenderId: "825475541984",
+  appId: "1:825475541984:web:d808130cad8e5114861985"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const loginScreen = document.getElementById("loginScreen");
+const chatApp = document.getElementById("chatApp");
+const userDisplay = document.getElementById("userDisplay");
+const input = document.getElementById("messageInput");
+const messagesDiv = document.getElementById("messages");
+
+let username = localStorage.getItem("username");
+
+if (username) enterChat();
+
+window.login = async function () {
+    const inputName = document.getElementById("usernameInput");
+    if (!inputName.value.trim()) return alert("Enter username");
+
+    username = inputName.value.trim();
+    localStorage.setItem("username", username);
+
+    await setDoc(doc(db, "users", username), {
+        username,
+        alive: true,
+        role: "none"
+    });
+
+    enterChat();
+};
+
+window.logout = function () {
+    localStorage.removeItem("username");
+    chatApp.style.display = "none";
+    loginScreen.style.display = "flex";
+    input.value = "";
+};
+
+window.sendMessage = function() {
+    if (!input.value.trim()) return;
+
+    addDoc(collection(db, "messages"), {
+        user: username,
+        text: input.value,
+        time: Date.now()
+    });
+
+    input.value = "";
+};
+
+
+
+
+function enterChat() {
+    loginScreen.style.display = "none";
+    chatApp.style.display = "flex";
+    userDisplay.textContent = username;
+    listenForMessages();
+}
+
+function sendMessage() {
+    if (!input.value.trim()) return;
+
+    addDoc(collection(db, "messages"), {
+        user: username,
+        text: input.value,
+        time: Date.now()
+    });
+
+    input.value = "";
+}
+
+function listenForMessages() {
+    const q = query(collection(db, "messages"), orderBy("time"));
+
+    onSnapshot(q, snapshot => {
+        messagesDiv.innerHTML = "";
+        snapshot.forEach(doc => {
+            const msg = doc.data();
+            const div = document.createElement("div");
+            div.className = "message";
+            div.textContent = `${msg.user}: ${msg.text}`;
+            messagesDiv.appendChild(div);
+        });
+    });
+}
+
+input.addEventListener("keydown", e => {
+    if (e.key === "Enter") sendMessage();
+});
+
+const  gameRef = doc(db, "game", "state");
+
+async function initGameState() {
+  const snap =await getDoc(gameRef);
+  if (!snap.exists()){
+    await setDoc(gameRef, {
+      active:false,
+      phase: "idle"
+    });
+  }
+}
+
+initGameState();
+
+window.startImposterGame = async function() {
+  await uodateDoc(gameRef, {
+    active: true,
+    phase: "idle"
+  });
+
+  await addDoc(collection(db, "rooms", ROOM, "messages"),{
+    type: "system",
+    text: "😈 Imposter Game is Starting! Get ready...",
+    time: serverTimestamp()
+  });
+};
+
+onSnapshot(gameRef, snap=>{
+  const game = snap.data();
+  if(!game) return;
+
+  if (game.phase === "starting"){
+    displayChat();
+  }
+});
+
+function disableChat(){
+  messageInput.disabled = true;
+}
+
+function enableChat(){
+  messageInput.disbled = false;
+}
+</script>
+
+</body>
+</html>
