@@ -3,15 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Chat</title>
+<title>Mini Room - Imposter Game</title>
 
 <style>
 * { box-sizing: border-box; }
 
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background: #222;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #121212;
+    color: white;
 }
 
 /* LOGIN SCREEN */
@@ -24,7 +25,6 @@ body {
     background-image: url("https://i.pinimg.com/originals/d5/84/0b/d5840b194bc468e606984aa99f6558c8.gif");
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
     position: relative;
 }
 
@@ -32,582 +32,302 @@ body {
     content: "";
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 1;
+    background: rgba(0,0,0,0.6);
 }
 
-#loginScreen * {
-    position: relative;
-    z-index: 2;
-    color: white;
-}
-
-#loginScreen h2 { margin-bottom: 20px; }
-
-#loginScreen input {
-    padding: 10px;
-    font-size: 16px;
-    margin-bottom: 10px;
-    width: 220px;
-    border: none;
-    border-radius: 4px;
-    color: #222;
-}
-
-#loginScreen button {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    border: none;
-    border-radius: 4px;
-    background-color: #2196f3;
-    color: white;
-}
-
-#loginScreen button:hover{
-  background: #356f17;
-}
+#loginScreen * { position: relative; z-index: 2; }
+#loginScreen h2 { margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+#loginScreen input, #loginScreen button { margin: 8px; padding: 12px; border-radius: 8px; border: none; font-size: 1rem; }
+#loginScreen input { width: 260px; color: #000; }
+#loginScreen button { background: #2196f3; color: white; cursor: pointer; font-weight: bold; width: 120px; }
+#loginScreen button:hover { background: #1976d2; }
 
 /* CHAT APP */
-.app {
-    height: 100vh;
-    display: none;
-    flex-direction: column;
-    background: #1e2134;
-}
+.app { height: 100vh; display: none; flex-direction: column; background: #1e2134; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2b2b3a; border-bottom: 1px solid #3d3d4d; }
+.logo-container { display: flex; align-items: center; gap: 10px; }
+.logo { width: 32px; height: 32px; object-fit: contain; }
 
-.topbar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-    background-color: #2b2b3a;
-    color: white;
-}
+#messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.message { padding: 4px 8px; border-radius: 4px; line-height: 1.4; word-wrap: break-word; }
 
-.logo {
-    width: 32px;
-    height: 32px;
-    object-fit: contain;
-}
+.inputBar { display: flex; padding: 15px; background: #2b2b3a; gap: 10px; }
+.inputBar input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #3d3d4d; color: white; outline: none; }
+.inputBar button { padding: 0 20px; border-radius: 8px; border: none; background: #2196f3; color: white; cursor: pointer; font-weight: bold; }
 
-.title { font-size: 18px; }
+.gameBar { padding: 10px; background: #121212; text-align: center; border-top: 1px solid #333; }
+.gameBar button { padding: 10px 20px; border-radius: 20px; border: none; background: #673ab7; color: white; cursor: pointer; font-weight: bold; }
+.gameBar button:hover { background: #5e35b1; }
 
-.header {
-    background: #2b2b3a;
-    color: white;
-    padding: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+.gameConsent { display: none; padding: 15px; text-align: center; background: #fff; color: #222; border-radius: 12px 12px 0 0; position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); z-index: 100; }
+.gameConsent button { margin: 5px; padding: 8px 25px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
+.btn-yes { background: #4caf50; color: white; }
+.btn-no { background: #f44336; color: white; }
 
-#messages {
-    flex: 1;
-    padding: 10px;
-    overflow-y: auto;
-}
-
-.message { margin-bottom: 6px; color: white; }
-
-.inputBar {
-    display: flex;
-    padding: 10px;
-    background: #eee;
-}
-
-.inputBar input { 
-  flex: 1; 
-  padding: 8px; 
-  cursor: pointer;
-}
-
-
-
-
-.gameBar {
-    padding: 6px;
-    background: #ddd;
-    text-align: center;
-}
-
-.gameBar button {
-    padding: 8px 12px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-.joinPrompt { 
-  margin-top:10px; 
-  display:flex; 
-  gap:10px; 
-}
-.joinPrompt button { 
-  padding:5px 10px; 
-  cursor:pointer; 
-}
-
-.gameBar button:hover { 
-  background: red; 
-  }
-.gameConsent{
-  display:none; 
-  padding:10px; 
-  text-align:center;
-  color:#2196f3;
-
-}
+#userDisplay { font-weight: bold; color: #4fc3f7; margin-right: 10px; }
+.logout-btn { background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN SCREEN -->
 <div id="loginScreen">
-    <span class="title">Welcome to MaoMao Mini_chat!</span>
-    <h2>Join Chat</h2>
-    <input id="usernameInput" placeholder="Enter username" />
-    <input type="color" id="colorPicker" value="#3498db" title="Pick your chat color" style="margin-bottom:10px; width:50px; height:40px; border:none; cursor:pointer;">
-    <button onclick="login()">Join</button>
+  <h2>Mini Room Chat</h2>
+  <input id="usernameInput" placeholder="Enter Username...">
+  <div style="display:flex; align-items:center; gap:10px;">
+    <span>Pick Color:</span>
+    <input type="color" id="colorPicker" value="#3498db" style="width:50px; padding:2px;">
+  </div>
+  <button onclick="login()">JOIN</button>
 </div>
 
-
-<!-- CHAT APP -->
 <div class="app" id="chatApp">
-    <div class="header">
-        <div class="topbar">
-            <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHQzeTY2Nnl6aWs1aHNzYjZqbjBiYTMza2cxaGpzc3E3ODh4cGttcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/OFBdpHZAfanrMB5RWJ/giphy.gif" class="logo">
-            <span class="title">Mini Room</span>
-        </div>
-        <span id="roomName">Unstable</span>
-        <span id="userDisplay"></span>
-        <button onclick="logout()" style="margin-left:10px;">Change Username</button>
+  <div class="header">
+    <div class="logo-container">
+        <img class="logo" src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHQzeTY2Nnl6aWs1aHNzYjZqbjBiYTMza2cxaGpzc3E3ODh4cGttcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/OFBdpHZAfanrMB5RWJ/giphy.gif"> 
+        <b>MINI ROOM</b>
     </div>
-
-    <div id="messages"></div>
-
-    <div class="inputBar">
-        <input id="messageInput" placeholder="Type a message..." />
-        <button onclick="sendMessage()">Send</button>
+    <div>
+        <span id="userDisplay"></span> 
+        <button class="logout-btn" onclick="logout()">Leave</button>
     </div>
+  </div>
 
-    <div class="gameBar">
-        <button id="startGameBtn" onclick="requestJoinGame()">😈 Start Imposter Game</button>
-    </div>
-    <div class="gameConsent" id="gameConsent">
-  <span>Do you want to join the Imposter Game?</span>
-  <button onclick="consentYes('yes')">Yes</button>
-  <button onclick="consentNo('no')">No</button>
-</div>
+  <div id="messages"></div>
 
+  <div id="gameConsent" class="gameConsent">
+    <p style="font-weight:bold; margin-bottom:10px;">Start Imposter Game?</p>
+    <button class="btn-yes" onclick="respondConsent(true)">YES</button>
+    <button class="btn-no" onclick="respondConsent(false)">NO</button>
+  </div>
+
+  <div class="inputBar">
+    <input id="messageInput" placeholder="Type a message...">
+    <button onclick="sendMessage()">SEND</button>
+  </div>
+
+  <div class="gameBar">
+    <button onclick="startGameRequest()">😈 START IMPOSTER GAME</button>
+  </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDoc, updateDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// Firebase config
+// -------- FIREBASE CONFIG --------
 const firebaseConfig = {
   apiKey: "AIzaSyA3wCv1DIdjlPS-zEVQJXhjYsiC3G2dBJY",
   authDomain: "mini-chatroom-5710b.firebaseapp.com",
-  projectId: "mini-chatroom-5710b",
-  storageBucket: "mini-chatroom-5710b.firebasestorage.app",
-  messagingSenderId: "825475541984",
-  appId: "1:825475541984:web:d808130cad8e5114861985"
+  projectId: "mini-chatroom-5710b"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// DOM Elements
+// -------- DOM ELEMENTS --------
 const loginScreen = document.getElementById("loginScreen");
 const chatApp = document.getElementById("chatApp");
 const userDisplay = document.getElementById("userDisplay");
-const input = document.getElementById("messageInput");
 const messagesDiv = document.getElementById("messages");
-const startGameBtn = document.getElementById("startGameBtn");
-const changeUsernameBtn = document.querySelector("button[onclick='logout()']");
 const consentDiv = document.getElementById("gameConsent");
+const inputEl = document.getElementById("messageInput");
 
-// Globals
-let username = localStorage.getItem("username");
-let userColors = {};
+// -------- GAME STATE --------
+let username = localStorage.getItem("username") || "";
 let players = [];
-let gameState = {
-  round: 1,
-  phase: "waiting",
-  imposter: "",
-  victims: [],
-  topic: "",
-  votes: {},
-  killed: [],
-  awaitingConsent: {}
-};
+let gameState = { phase: "waiting" };
 
-// Topics
 const topics = {
-  Place:["Hotel","Beach","School","Cinema","Club","Gym","Haewon's basement"],
-  Item:["Dildo","Laptop","Pen","Watch","Cat ears","Handcuffs","Collar"],
-  Fruit:["Durian","Banana","Strawberry","Orange"],
-  Drink:["Beer","Wine","Coffee","Matcha"],
-  Food:["Pizza","Burger","Sushi","Pasta"],
-  Anime:["Naruto","One Piece","Attack on Titan","Demon Slayer"],
-  Artist:["Bruno Mars","Billie Eilish","Ariana Grande","Beabadoobee","Tyla","Realestk","Daniel Caesar"]
+  Place: ["Hotel", "Beach", "School", "Cinema", "Club", "Gym", "Airport"],
+  Fruit: ["Durian", "Banana", "Strawberry", "Mango", "Watermelon"],
+  Food: ["Pizza", "Burger", "Sushi", "Pasta", "Taco"],
+  Item: ["Laptop", "Smartwatch", "Umbrella", "Backpack"]
 };
 
-// Random topic generator
-function getRandomTopic() {
-  const categories = Object.keys(topics);
-  const cat = categories[Math.floor(Math.random() * categories.length)];
-  const item = topics[cat][Math.floor(Math.random() * topics[cat].length)];
-  return { category: cat, topic: item };
+// -------- CORE FUNCTIONS --------
+
+async function sendSystem(msg) {
+  await addDoc(collection(db, "messages"), { 
+    user: "SYSTEM", 
+    text: msg, 
+    time: Date.now() 
+  });
 }
 
-// ----- LOGIN -----
-window.login = async function() {
-  const inputName = document.getElementById("usernameInput");
-  if(!inputName.value.trim()) return alert("Enter username");
+async function fetchPlayers() {
+  const snap = await getDocs(collection(db, "users"));
+  players = [];
+  snap.forEach(d => players.push(d.id));
+}
 
-  const colorPicker = document.getElementById("colorPicker");
-  const chosenColor = colorPicker.value;
+// -------- WINDOW GLOBALS (For HTML onclick) --------
 
-  username = inputName.value.trim();
+window.login = async () => {
+  const name = document.getElementById("usernameInput").value.trim();
+  if (!name) return alert("Please enter a username!");
+  
+  username = name;
   localStorage.setItem("username", username);
-  userColors[username] = chosenColor;
+  const color = document.getElementById("colorPicker").value;
 
-  await setDoc(doc(db, "users", username), { username, alive: true, role: "none", color: chosenColor });
-
-  enterChat();
-  sendSystemMessage(`${username} joined the game!`);
-  fetchPlayers();
-};
-
-// ----- LOGOUT -----
-window.logout = function() {
-  if(gameState.phase !== "waiting") { alert("Can't change username during game!"); return; }
-  localStorage.removeItem("username");
-  chatApp.style.display = "none";
-  loginScreen.style.display = "flex";
-  input.value = "";
-};
-
-// ----- ENTER CHAT -----
-function enterChat() {
+  await setDoc(doc(db, "users", username), { username, color });
+  
   loginScreen.style.display = "none";
   chatApp.style.display = "flex";
   userDisplay.textContent = username;
-  listenForMessages();
-}
 
-// ----- SYSTEM MESSAGE -----
-function sendSystemMessage(msg){
-  addDoc(collection(db,"messages"), { user:"Mini-chat system", text:msg, time:Date.now() });
-}
+  listenMessages();
+  fetchPlayers();
+  await sendSystem(`👋 ${username} joined the chat!`);
+};
 
-// ----- SEND MESSAGE -----
-window.sendMessage = async function(){
-  if(!input.value.trim()) return;
-  const text = input.value.trim();
-  input.value = "";
+window.logout = async () => {
+  if (!username) return;
+  if (gameState.phase !== "waiting") {
+    if (!confirm("Game is active! If you leave, the game might break. Leave?")) return;
+  }
+  
+  await sendSystem(`🚪 ${username} left the chat.`);
+  await deleteDoc(doc(db, "users", username));
+  localStorage.removeItem("username");
+  location.reload();
+};
 
-  // If user starts with / it's a command
-  if(text.startsWith("/")){
-    handleCommand(username, text);
-  } else {
-    // Save message in Firestore with user color
-    await addDoc(collection(db,"messages"), {
-      user: username,
-      text: text,
-      time: Date.now(),
-      color: userColors[username] || "white"
-    });
+window.sendMessage = async () => {
+  const text = inputEl.value.trim();
+  if (!text) return;
+  
+  const userSnap = await getDoc(doc(db, "users", username));
+  const color = userSnap.exists() ? userSnap.data().color : "#ffffff";
+  
+  inputEl.value = "";
+  await addDoc(collection(db, "messages"), { 
+    user: username, 
+    text: text, 
+    time: Date.now(), 
+    color: color 
+  });
+};
+
+inputEl.addEventListener("keydown", (e) => { if(e.key === "Enter") window.sendMessage(); });
+
+// -------- GAME LOGIC --------
+
+window.startGameRequest = async () => {
+  await fetchPlayers();
+  if (players.length < 3) {
+    return alert("You need at least 3 players online to start!");
+  }
+  const ref = doc(db, "game", "request");
+  await setDoc(ref, { active: true, responses: {}, time: Date.now() });
+  await sendSystem(`📢 ${username} wants to start the Imposter Game! Everyone vote now.`);
+};
+
+window.respondConsent = async (yes) => {
+  const ref = doc(db, "game", "request");
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+
+  const data = snap.data();
+  const responses = data.responses || {};
+  responses[username] = yes;
+
+  await updateDoc(ref, { responses });
+  consentDiv.style.display = "none"; // Hide UI for this user immediately
+
+  const status = yes ? "✅ joined" : "❌ declined";
+  await sendSystem(`${username} ${status} the game.`);
+
+  // Logic to count
+  const yesCount = Object.values(responses).filter(v => v === true).length;
+  const noCount = Object.values(responses).filter(v => v === false).length;
+
+  if (noCount > 0) {
+    await sendSystem("⚠️ Game Canceled: Someone declined the invite.");
+    await setDoc(ref, { active: false, responses: {} });
+  } else if (yesCount >= 3) {
+    window.startGame();
+    await setDoc(ref, { active: false, responses: {} });
   }
 };
 
+window.startGame = () => {
+  gameState.phase = "playing";
+  
+  const impIndex = Math.floor(Math.random() * players.length);
+  const imposter = players[impIndex];
+  
+  const cats = Object.keys(topics);
+  const cat = cats[Math.floor(Math.random() * cats.length)];
+  const topic = topics[cat][Math.floor(Math.random() * topics[cat].length)];
 
-// ----- LISTEN FOR MESSAGES -----
-function listenForMessages(){
-  const q = query(collection(db,"messages"), orderBy("time"));
-  onSnapshot(q, snapshot=>{
+  // 1. Post Rules
+  const rules = `
+📜 GAME RULES:
+1. One player is the 😈 IMPOSTER.
+2. Everyone else knows the topic: [${cat}].
+3. Discussion: Ask questions to find the imposter.
+4. Imposter: Try to guess the topic and blend in!
+5. Vote: Use the chat to agree on who to kick.`;
+  
+  sendSystem(rules);
+  sendSystem("🎮 GAME BEGUN! Look at the alert on your screen for your role.");
+
+  // 2. Alert Roles
+  players.forEach(p => {
+    if (p === username) {
+      if (p === imposter) {
+        alert("😈 ROLE: YOU ARE THE IMPOSTER!\nBlend in and don't let them catch you.");
+      } else {
+        alert(`😇 ROLE: YOU ARE A VICTIM.\nTopic: ${topic}\nCategory: ${cat}`);
+      }
+    }
+  });
+};
+
+// -------- LISTENERS --------
+
+function listenMessages() {
+  const q = query(collection(db, "messages"), orderBy("time"));
+  onSnapshot(q, (snapshot) => {
     messagesDiv.innerHTML = "";
-    snapshot.forEach(doc=>{
-      const msg = doc.data();
+    snapshot.forEach((doc) => {
+      const m = doc.data();
       const div = document.createElement("div");
       div.className = "message";
-
-      // Use color from Firestore if exists
-      if(msg.user === "Mini-chat system" || msg.user === "SYSTEM") div.style.color = "yellow";
-      else div.style.color = msg.color || "white";
-
-      div.textContent = `${msg.user}: ${msg.text}`;
+      
+      if (m.user === "SYSTEM") {
+        div.style.color = "#ffcc00";
+        div.style.background = "rgba(255, 204, 0, 0.1)";
+        div.style.fontWeight = "bold";
+      } else {
+        div.style.color = m.color || "white";
+      }
+      
+      div.textContent = `${m.user}: ${m.text}`;
       messagesDiv.appendChild(div);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
     });
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
   });
 }
 
-
-// ----- FETCH PLAYERS -----
-async function fetchPlayers() {
-  const usersSnap = await getDocs(collection(db,"users"));
-  players = [];
-  usersSnap.forEach(doc=>players.push(doc.id));
-}
-
-// // ----- GAME CONSENT -----
-// startGameBtn.addEventListener("click", async () => {
-//   await fetchPlayers();
-//   if(players.length < 2) { alert("Need at least 2players!"); return; }
-
-//   consentDiv.style.display = "block";
-//   players.forEach(p => gameState.awaitingConsent[p] = null);
-//   sendSystemMessage("Do you want to join the Imposter Game?");
-// });
-
-// window.respondConsent = function(answer){
-//   if(gameState.phase !== "waiting") return;
-
-//   gameState.awaitingConsent[username] = (answer.toLowerCase() === "yes");
-//   sendSystemMessage(`${username} responded: ${answer}`);
-//   consentDiv.style.display = "none";
-
-//   const yesCount = Object.values(gameState.awaitingConsent).filter(v => v).length;
-//   const totalAnswered = Object.values(gameState.awaitingConsent).filter(v => v!==null).length;
-//   const totalPlayers = Object.values(gameState.awaitingConsent).length;
-
-//   if(totalPlayers >=5 && yesCount >=5) startGamePhase();
-//   else if(totalPlayers <5 && yesCount >=3 && totalAnswered===totalPlayers) startGamePhase();
-//   else if(totalAnswered===totalPlayers && yesCount <3) {
-//     sendSystemMessage("Not enough players agreed. Game canceled.");
-//     gameState.awaitingConsent = {};
-//   }
-// };
-
-
-
-// // ----- START GAME PHASE -----
-// function startGamePhase(){
-//   changeUsernameBtn.disabled = true;
-//   changeUsernameBtn.style.opacity = 0.5;
-//   assignRoles();
-// }
-
-// // ----- ASSIGN ROLES -----
-// function assignRoles() {
-//   const impIndex = Math.floor(Math.random()*players.length);
-//   gameState.imposter = players[impIndex];
-//   gameState.victims = players.filter(p=>p!==gameState.imposter);
-//   const { category, topic } = getRandomTopic();
-//   gameState.topic = topic;
-
-//   // Rules
-//   const rules = `📝 Game Rules:
-// 1. Stay muted during discussion.
-// 2. Read your role & topic carefully.
-// 3. Victims receive a topic (same for all victims).
-// 4. Imposter can /kill one player during discussion.
-// 5. After discussion, vote using /vote [username].
-// 6. Game lasts 2 rounds.`;
-//   sendSystemMessage(rules);
-
-//   // Private messages
-//   players.forEach(p=>{
-//     let msg;
-//     if(p===gameState.imposter) msg = "You are the IMPOSTER!";
-//     else msg = `You are a VICTIM.\nTopic: ${topic} (${category})`;
-//     if(p===username) alert(msg);
-//     addDoc(collection(db,"privateMessages"), {to:p,text:msg,time:Date.now()});
-//   });
-
-//   gameState.phase="discussion";
-//   sendSystemMessage(`Discussion phase started! 10 minutes until voting.`);
-//   setTimeout(()=>{
-//     gameState.phase="voting";
-//     sendSystemMessage("Discussion ended! Type /vote [username] to vote.");
-//   }, 10*60*1000);
-// }
-
-// // ----- COMMAND HANDLER -----
-// function handleCommand(user,text){
-//   if(text.startsWith("/kill ")){
-//     const target=text.split(" ")[1];
-//     if(user===gameState.imposter && gameState.victims.includes(target)){
-//       gameState.killed.push(target);
-//       sendSystemMessage(`${user} killed ${target}!`);
-//     }
-//   } else if(text.startsWith("/vote ")){
-//     const target=text.split(" ")[1];
-//     gameState.votes[user]=target;
-//     sendSystemMessage(`${user} voted for ${target}!`);
-//     checkVotes();
-//   }
-// }
-
-// // ----- CHECK VOTES -----
-// function checkVotes(){
-//   const votes=gameState.votes;
-//   const voteCounts={};
-//   for(const v in votes){
-//     if(!voteCounts[votes[v]]) voteCounts[votes[v]]=0;
-//     voteCounts[votes[v]]++;
-//   }
-//   for(const person in voteCounts){
-//     if(voteCounts[person]>=Math.ceil(players.length/2)){
-//       if(person===gameState.imposter) sendSystemMessage(`Imposter ${person} got voted out! Victims win this round!`);
-//       else sendSystemMessage(`Victim ${person} got voted out! Imposter wins this round!`);
-//       gameState.round++;
-//       gameState.votes={};
-//       if(gameState.round>2){
-//         sendSystemMessage("Game ended after 2 rounds!");
-//         gameState.phase="waiting";
-//         changeUsernameBtn.disabled=false;
-//         changeUsernameBtn.style.opacity=1;
-//       } else assignRoles();
-//     }
-//   }
-// }
-
-// // ----- ENTER KEY -----
-// input.addEventListener("keydown", e=>{ if(e.key==="Enter") sendMessage(); });
-
-// // ----- AUTO-ENTER CHAT IF USER EXISTS -----
-// if(username) enterChat();
-
-// ---------------- GAME CONSENT ----------------
-startGameBtn.addEventListener("click", async()=>{
-  await fetchPlayers();
-  if(players.length<3){ alert("Need at least 3 players!"); return; }
-
-  // create consent request in Firestore
-  const consentDoc = doc(db,"gameConsent","current");
-  await setDoc(consentDoc,{initiator:username,responses:{},timestamp:Date.now()});
-  sendSystemMessage(`${username} wants to start an Imposter Game!`);
+onSnapshot(doc(db, "game", "request"), (snap) => {
+  if (!snap.exists()) return;
+  const data = snap.data();
+  // Show pop-up only if game is active AND user hasn't voted yet
+  const hasVoted = data.responses && data.responses[username] !== undefined;
+  consentDiv.style.display = (data.active && !hasVoted) ? "block" : "none";
 });
 
-// Listen for consent requests
-const consentCollection = collection(db,"gameConsent");
-onSnapshot(doc(db,"gameConsent","current"), snapshot=>{
-  if(!snapshot.exists()) return;
-  const data = snapshot.data();
-  if(data.responses[username] !== undefined) return; // already responded
-
-  // show consent popup
-  consentDiv.style.display = "block";
-  document.getElementById("consentYes").onclick = ()=>respondConsent("yes",snapshot.ref);
-  document.getElementById("consentNo").onclick = ()=>respondConsent("no",snapshot.ref);
-});
-
-async function respondConsent(answer, ref){
-  const data = (await ref.get()).data();
-  const responses = data.responses || {};
-  responses[username] = answer.toLowerCase()==="yes";
-  await updateDoc(ref,{responses});
-
-  sendSystemMessage(`${username} responded: ${answer}`);
-  consentDiv.style.display = "none";
-
-  const yesCount = Object.values(responses).filter(v=>v).length;
-  const totalAnswered = Object.values(responses).length;
-  const totalPlayers = players.length;
-
-  if(totalPlayers>=5 && yesCount>=5) startGame();
-  else if(totalPlayers<5 && yesCount>=3 && totalAnswered===totalPlayers) startGame();
-  else if(totalAnswered===totalPlayers && yesCount<3){
-    sendSystemMessage("Not enough players agreed. Game canceled.");
-    // delete consent doc so next attempt works
-    await setDoc(doc(db,"gameConsent","current"),{},{merge:true});
-  }
+// -------- INITIALIZE --------
+if (username) {
+  loginScreen.style.display = "none";
+  chatApp.style.display = "flex";
+  userDisplay.textContent = username;
+  listenMessages();
+  fetchPlayers();
 }
 
-// ---------------- START GAME ----------------
-window.startGame = async function(){
-  changeUsernameBtn.disabled = true;
-  changeUsernameBtn.style.opacity=0.5;
-  assignRoles();
-}
-
-// ---------------- ASSIGN ROLES ----------------
-function assignRoles(){
-  const impIndex = Math.floor(Math.random()*players.length);
-  gameState.imposter = players[impIndex];
-  gameState.victims = players.filter(p=>p!==gameState.imposter);
-  const {category, topic} = getRandomTopic();
-  gameState.topic = topic;
-
-  // Show rules
-  const rules = `📝 Game Rules:
-1. Stay muted during discussion.
-2. Read your role & topic carefully.
-3. Victims receive the same topic.
-4. Imposter can /kill one player.
-5. Vote using /vote [username].
-6. Game lasts 2 rounds.`;
-  sendSystemMessage(rules);
-
-  players.forEach(p=>{
-    let msg;
-    if(p===gameState.imposter) msg="You are the IMPOSTER!";
-    else msg=`You are a VICTIM.\nTopic: ${topic} (${category})`;
-    if(p===username) alert(msg);
-    addDoc(collection(db,"privateMessages"),{to:p,text:msg,time:Date.now()});
-  });
-
-  gameState.phase="discussion";
-  sendSystemMessage(`Discussion phase started! 10 minutes until voting.`);
-
-  setTimeout(()=>{
-    gameState.phase="voting";
-    sendSystemMessage("Discussion ended! Type /vote [username] to vote.");
-  },10*60*1000);
-}
-
-// ---------------- COMMAND HANDLER ----------------
-function handleCommand(user,text){
-  if(text.startsWith("/kill ")){
-    const target=text.split(" ")[1];
-    if(user===gameState.imposter && gameState.victims.includes(target)){
-      gameState.killed.push(target);
-      sendSystemMessage(`${user} killed ${target}!`);
-    }
-  } else if(text.startsWith("/vote ")){
-    const target=text.split(" ")[1];
-    gameState.votes[user]=target;
-    sendSystemMessage(`${user} voted for ${target}!`);
-    checkVotes();
-  }
-}
-
-// ---------------- CHECK VOTES ----------------
-function checkVotes(){
-  const votes=gameState.votes;
-  const voteCounts={};
-  for(const v in votes){
-    if(!voteCounts[votes[v]]) voteCounts[votes[v]]=0;
-    voteCounts[votes[v]]++;
-  }
-  for(const person in voteCounts){
-    if(voteCounts[person]>=Math.ceil(players.length/2)){
-      if(person===gameState.imposter) sendSystemMessage(`Imposter ${person} got voted out! Victims win!`);
-      else sendSystemMessage(`Victim ${person} got voted out! Imposter wins!`);
-
-      gameState.round++;
-      gameState.votes={};
-
-      if(gameState.round>2){
-        sendSystemMessage("Game ended after 2 rounds!");
-        gameState.phase="waiting";
-        changeUsernameBtn.disabled=false;
-        changeUsernameBtn.style.opacity=1;
-      } else assignRoles();
-    }
-  }
-}
-
-input.addEventListener("keydown", e=>{ if(e.key==="Enter") sendMessage(); });
-if(username) enterChat();
 </script>
-
-
 </body>
 </html>
-
