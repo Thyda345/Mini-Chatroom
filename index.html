@@ -3,279 +3,246 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Room - Imposter Game</title>
+<title>Mini Room - Sync Fix</title>
 <style>
 * { box-sizing: border-box; }
 body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #121212; color: white; overflow: hidden; }
 
-/* LOGIN SCREEN */
+/* LOGIN */
 #loginScreen { 
     height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; 
     background-image: url("https://i.pinimg.com/originals/d5/84/0b/d5840b194bc468e606984aa99f6558c8.gif"); 
-    background-size: cover; background-position: center; position: relative; z-index: 10;
+    background-size: cover; background-position: center; position: relative;
 }
 #loginScreen::before { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
 #loginScreen * { position: relative; z-index: 2; }
 #loginScreen input { margin: 10px; padding: 12px; width: 260px; border-radius: 8px; border: none; }
 
-/* MAIN LAYOUT */
+/* LAYOUT */
 .app { height: 100vh; display: none; flex-direction: row; background: #1e2134; }
-.sidebar { width: 200px; background: #2b2b3a; border-right: 1px solid #444; display: flex; flex-direction: column; padding: 15px; }
-.player-item { padding: 5px 0; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
-.status-dot { width: 8px; height: 8px; background: #4caf50; border-radius: 50%; }
+.sidebar { width: 180px; background: #2b2b3a; border-right: 1px solid #444; padding: 15px; overflow-y: auto; }
+@media (max-width: 600px) { .sidebar { display: none; } }
 
-.chat-main { flex: 1; display: flex; flex-direction: column; position: relative; }
-.header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #2b2b3a; border-bottom: 1px solid #444; }
-.logo { width: 35px; height: 35px; vertical-align: middle; border-radius: 50%; }
+.chat-main { flex: 1; display: flex; flex-direction: column; position: relative; height: 100vh; }
+.header { height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; background: #2b2b3a; border-bottom: 1px solid #444; flex-shrink: 0; }
 
-/* ROLE DISPLAY CARD */
-#roleCard { 
-    display: none; background: #ffeb3b; color: #000; padding: 10px; 
-    text-align: center; font-weight: bold; border-bottom: 2px solid #fbc02d; 
-}
+#roleCard { display: none; padding: 12px; text-align: center; font-weight: bold; font-size: 1.1rem; border-bottom: 3px solid rgba(0,0,0,0.5); flex-shrink: 0; }
 
 #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-.message { padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.05); white-space: pre-wrap; }
+.message { padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.05); word-wrap: break-word; }
+.sys-msg { background: #ffcc00 !important; color: black !important; font-weight: bold; padding: 10px; border-radius: 8px; text-align: center; }
 
-button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; }
-.btn-rules { background: #ff9800; color: white; padding: 5px 10px; margin-right: 5px; }
-.btn-leave { background: #f44336; color: white; padding: 5px 10px; }
-.btn-send { background: #2196f3; color: white; padding: 0 20px; }
-.btn-start-game { background: #673ab7; color: white; padding: 12px 25px; border-radius: 25px; }
+.inputBar { display: flex; padding: 10px; background: #2b2b3a; gap: 8px; flex-shrink: 0; }
+.inputBar input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #3d3d4d; color: white; font-size: 16px; }
+button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; padding: 10px 15px; }
 
-.gameConsent { 
-    display: none; padding: 20px; text-align: center; background: #fff; color: #222; 
-    border-radius: 12px; position: absolute; top: 50%; left: 50%; 
-    transform: translate(-50%, -50%); width: 320px; box-shadow: 0 0 30px rgba(0,0,0,0.7); z-index: 1000; 
+#gameConsent { 
+    display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); 
+    background: white; color: black; padding: 25px; border-radius: 15px; z-index: 9999; text-align: center; width: 90%; max-width: 320px; box-shadow: 0 0 50px black;
 }
-
-.inputBar { display: flex; padding: 15px; background: #2b2b3a; gap: 10px; }
-.inputBar input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #3d3d4d; color: white; outline: none; }
 </style>
 </head>
 <body>
 
 <div id="loginScreen">
-  <h2 style="color:white;">Mini Room Chat</h2>
-  <input id="usernameInput" placeholder="Enter Username...">
-  <div style="color:white; margin-bottom:10px;">
-    Pick Color: <input type="color" id="colorPicker" value="#3498db" style="width:50px; padding:0; height:30px; vertical-align:middle;">
-  </div>
-  <button onclick="login()" style="padding:12px 40px; background:#2196f3; color:white;">JOIN</button>
+  <h2 style="color:white;">MINI ROOM</h2>
+  <input id="usernameInput" placeholder="Username...">
+  <input type="color" id="colorPicker" value="#3498db" style="width: 260px; height: 40px;">
+  <button onclick="login()" style="background:#2196f3; color:white; width: 260px;">JOIN</button>
 </div>
 
 <div class="app" id="chatApp">
   <div class="sidebar">
-    <h3>Online (<span id="playerCount">0</span>)</h3>
+    <h3 style="font-size: 0.9rem;">ONLINE (<span id="playerCount">0</span>)</h3>
     <div id="playerList"></div>
   </div>
-
   <div class="chat-main">
     <div class="header">
-        <div>
-            <img class="logo" src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHQzeTY2Nnl6aWs1aHNzYjZqbjBiYTMza2cxaGpzc3E3ODh4cGttcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/OFBdpHZAfanrMB5RWJ/giphy.gif">
-            <b>MINI ROOM</b>
-        </div>
-        <div>
-            <button class="btn-rules" onclick="showRules()">Rules</button>
-            <span id="userDisplay" style="color:#4fc3f7; margin-right:10px; font-weight:bold;"></span> 
-            <button class="btn-leave" onclick="logout()">Leave</button>
-        </div>
+        <button onclick="resetGameManually()" style="background:#555; color:white; font-size:10px; padding:4px;">RESET</button>
+        <div><span id="userDisplay" style="margin-right:8px; font-size:0.9rem;"></span><button onclick="logout()" style="background:#f44336; color:white; padding:4px 8px; font-size:0.8rem;">Leave</button></div>
     </div>
-
     <div id="roleCard"></div>
-
     <div id="messages"></div>
-
-    <div id="gameConsent" class="gameConsent">
-      <h3 style="margin-top:0;">🎮 Game Invite</h3>
-      <p id="voteStatus">Checking players...</p>
-      <button style="background:#4caf50; color:white; padding: 10px 20px;" onclick="respondConsent(true)">YES</button>
-      <button style="background:#f44336; color:white; padding: 10px 20px;" onclick="respondConsent(false)">NO</button>
-    </div>
-
     <div class="inputBar">
-      <input id="messageInput" placeholder="Type a message...">
-      <button class="btn-send" onclick="sendMessage()">SEND</button>
+      <input id="messageInput" placeholder="Message..." autocomplete="off">
+      <button id="sendBtn" style="background:#2196f3; color:white;">SEND</button>
     </div>
-
-    <div style="padding:10px; text-align:center; background:#121212;">
-      <button class="btn-start-game" onclick="startGameRequest()">😈 START IMPOSTER GAME</button>
+    <div style="padding:10px; text-align:center; background:#121212; flex-shrink:0;">
+      <button onclick="startGameRequest()" style="background:#673ab7; color:white; border-radius:25px; width:100%; max-width:200px;">😈 START GAME</button>
     </div>
   </div>
 </div>
 
+<div id="gameConsent">
+    <h3 style="margin-top:0;">Start Game?</h3>
+    <p id="voteStatus" style="font-weight:bold; color:#673ab7;">Waiting...</p>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+        <button onclick="respondConsent(true)" style="background:#4caf50; color:white; flex:1; height:50px;">YES</button>
+        <button onclick="respondConsent(false)" style="background:#f44336; color:white; flex:1; height:50px;">NO</button>
+    </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDoc, updateDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyA3wCv1DIdjlPS-zEVQJXhjYsiC3G2dBJY",
-  authDomain: "mini-chatroom-5710b.firebaseapp.com",
-  projectId: "mini-chatroom-5710b"
-};
+const firebaseConfig = { apiKey: "AIzaSyA3wCv1DIdjlPS-zEVQJXhjYsiC3G2dBJY", authDomain: "mini-chatroom-5710b.firebaseapp.com", projectId: "mini-chatroom-5710b" };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+let myID = localStorage.getItem("myID") || Math.random().toString(36).slice(2, 11);
+localStorage.setItem("myID", myID);
 let username = localStorage.getItem("username") || "";
-let userColor = localStorage.getItem("userColor") || "#ffffff";
-let onlineCount = 0;
+let myColor = localStorage.getItem("userColor") || "#ffffff";
 
-// --- UTILS ---
-async function sendSystem(msg) {
-  await addDoc(collection(db, "messages"), { user: "SYSTEM", text: msg, time: Date.now() });
+async function postSys(txt) {
+    await addDoc(collection(db, "messages"), { user: "SYSTEM", text: txt, time: Date.now(), isSystem: true });
 }
 
-window.showRules = () => {
-    alert("📜 GAME RULES:\n1. Everyone online must say YES.\n2. One person is the IMPOSTER.\n3. Victims know the topic.\n4. Find the imposter!");
-};
-
-// --- AUTH ---
 window.login = async () => {
-  const name = document.getElementById("usernameInput").value.trim();
-  if (!name) return alert("Enter a name!");
-  username = name;
-  userColor = document.getElementById("colorPicker").value;
-  localStorage.setItem("username", username);
-  localStorage.setItem("userColor", userColor);
-  await setDoc(doc(db, "users", username), { username, color: userColor });
-  await sendSystem(`👋 ${username} has joined!`);
-  setTimeout(() => { location.reload(); }, 1000); // 1 second delay
+    const name = document.getElementById("usernameInput").value.trim();
+    if (!name) return;
+    localStorage.setItem("username", name);
+    localStorage.setItem("userColor", document.getElementById("colorPicker").value);
+    await setDoc(doc(db, "users", myID), { username: name, color: document.getElementById("colorPicker").value, lastSeen: Date.now(), id: myID });
+    location.reload();
 };
 
 window.logout = async () => {
-  await sendSystem(`🚪 ${username} left.`);
-  await deleteDoc(doc(db, "users", username));
-  localStorage.clear();
-  location.reload();
+    await deleteDoc(doc(db, "users", myID));
+    localStorage.clear();
+    location.reload();
 };
 
-window.sendMessage = async () => {
-  const input = document.getElementById("messageInput");
-  const text = input.value.trim();
-  if (!text || !username) return;
-  input.value = "";
-  await addDoc(collection(db, "messages"), { user: username, text: text, time: Date.now(), color: userColor });
-};
+if (username) {
+    setInterval(async () => { await updateDoc(doc(db, "users", myID), { lastSeen: Date.now() }); }, 10000);
+}
 
-document.getElementById("messageInput").addEventListener("keydown", (e) => { if(e.key === "Enter") window.sendMessage(); });
-
-// --- SIDEBAR ---
 onSnapshot(collection(db, "users"), (snap) => {
+    const now = Date.now();
     const listDiv = document.getElementById("playerList");
+    let count = 0;
     listDiv.innerHTML = "";
-    onlineCount = snap.size;
-    document.getElementById("playerCount").textContent = onlineCount;
     snap.forEach(d => {
-        const p = d.data();
-        const div = document.createElement("div");
-        div.className = "player-item";
-        div.innerHTML = `<div class="status-dot"></div> <span style="color:${p.color}">${p.username}</span>`;
-        listDiv.appendChild(div);
+        const u = d.data();
+        if (now - u.lastSeen < 30000) {
+            count++;
+            listDiv.innerHTML += `<div class="player-item" style="color:${u.color}">● ${u.username}</div>`;
+        }
     });
+    document.getElementById("playerCount").textContent = count;
 });
 
-// --- GAME LOGIC ---
-window.startGameRequest = async () => {
-  if (onlineCount < 3) return alert("You need at least 3 players online!");
-  await setDoc(doc(db, "game", "request"), { active: true, responses: {}, time: Date.now() });
-  await sendSystem(`📢 ${username} started a game request! Everyone check your screen.`);
-};
-
-window.respondConsent = async (yes) => {
-  const ref = doc(db, "game", "request");
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return;
-
-  const responses = snap.data().responses || {};
-  responses[username] = yes;
-  await updateDoc(ref, { responses });
-
-  if (yes === false) {
-    await sendSystem(`❌ ${username} said NO. Canceled.`);
-    await setDoc(ref, { active: false, responses: {} });
-  } else {
-    await sendSystem(`✅ ${username} is ready!`);
-    const yesCount = Object.values(responses).filter(v => v === true).length;
-    if (yesCount >= onlineCount) {
-      window.startGame();
-      await setDoc(ref, { active: false, responses: {} });
-    }
-  }
-};
-
-window.startGame = async () => {
-  const snap = await getDocs(collection(db, "users"));
-  const playerList = [];
-  snap.forEach(d => playerList.push(d.id));
-
-  const imposter = playerList[Math.floor(Math.random() * playerList.length)];
-  const topics = ["Pizza", "Cinema", "Airplane", "Library", "Beach", "Gym"];
-  const topic = topics[Math.floor(Math.random() * topics.length)];
-
-  // Post rules to chat
-  await sendSystem(`📜 GAME RULES: 1. One Imposter. 2. Victims know the topic. 3. Find them!`);
-
-  // Write the session to trigger roles for everyone
-  await setDoc(doc(db, "game", "session"), {
-    imposter: imposter,
-    topic: topic,
-    players: playerList,
-    startedAt: Date.now()
-  });
-};
-
-// --- REAL-TIME ROLE LISTENER ---
+// --- THE REPAIR: ROLE SYNC ---
 onSnapshot(doc(db, "game", "session"), (snap) => {
-    const session = snap.data();
+    const data = snap.data();
     const card = document.getElementById("roleCard");
-    if (session && Date.now() - session.startedAt < 600000) { // Keep role visible for 10 mins
+    if (data && data.rolesActive === true) {
         card.style.display = "block";
-        if (username === session.imposter) {
-            card.innerHTML = "😈 YOUR ROLE: IMPOSTER | Goal: Blend in and guess the topic!";
-            card.style.background = "#f44336"; card.style.color = "white";
-        } else if (session.players.includes(username)) {
-            card.innerHTML = `😇 YOUR ROLE: VICTIM | Secret Topic: ${session.topic}`;
-            card.style.background = "#4caf50"; card.style.color = "white";
+        // Check if CURRENT USER is the imposter stored in the DB
+        const isImposter = (username === data.imposter);
+        if (isImposter) {
+            card.style.background = "#b71c1c";
+            card.innerHTML = `😈 YOU ARE THE IMPOSTER! <br><small>Blend in with the others!</small>`;
+        } else {
+            card.style.background = "#2e7d32";
+            card.innerHTML = `😇 YOU ARE A CIVILIAN! <br>TOPIC: ${data.topic}`;
         }
     } else {
         card.style.display = "none";
     }
 });
 
-// --- MESSAGES ---
+window.sendMessage = async () => {
+    const input = document.getElementById("messageInput");
+    if (!input.value.trim()) return;
+    await addDoc(collection(db, "messages"), { user: username, text: input.value, time: Date.now(), color: myColor });
+    input.value = "";
+};
+
+document.getElementById("messageInput").addEventListener("keydown", (e) => { if (e.key === "Enter") window.sendMessage(); });
+document.getElementById("sendBtn").addEventListener("click", window.sendMessage);
+
 onSnapshot(query(collection(db, "messages"), orderBy("time")), (snap) => {
-  const mDiv = document.getElementById("messages");
-  mDiv.innerHTML = "";
-  snap.forEach(d => {
-    const m = d.data();
-    const div = document.createElement("div");
-    div.className = "message";
-    div.style.color = m.user === "SYSTEM" ? "#ffcc00" : m.color || "white";
-    div.textContent = `${m.user}: ${m.text}`;
-    mDiv.appendChild(div);
-  });
-  mDiv.scrollTop = mDiv.scrollHeight;
+    const mDiv = document.getElementById("messages");
+    mDiv.innerHTML = "";
+    snap.forEach(d => {
+        const m = d.data();
+        mDiv.innerHTML += `<div class="message ${m.isSystem ? 'sys-msg' : ''}" style="color:${m.isSystem ? 'black' : (m.color || 'white')}">${m.isSystem ? '' : `<b>${m.user}:</b> `}${m.text}</div>`;
+    });
+    mDiv.scrollTop = mDiv.scrollHeight;
 });
 
-// --- CONSENT ---
-onSnapshot(doc(db, "game", "request"), (snap) => {
-  const data = snap.data();
-  const consentDiv = document.getElementById("gameConsent");
-  if (data && data.active) {
-    const hasVoted = data.responses && data.responses[username] !== undefined;
-    const currentYes = Object.values(data.responses).filter(v => v === true).length;
-    document.getElementById("voteStatus").textContent = `Ready: ${currentYes} / ${onlineCount}`;
-    consentDiv.style.display = hasVoted ? "none" : "block";
-  } else {
-    consentDiv.style.display = "none";
-  }
+window.resetGameManually = async () => {
+    await setDoc(doc(db, "game", "session"), { rolesActive: false, imposter: "", topic: "" });
+    await setDoc(doc(db, "game", "request"), { active: false });
+};
+
+let isProcessing = false;
+window.startGameRequest = async () => {
+    isProcessing = false;
+    await setDoc(doc(db, "game", "session"), { rolesActive: false });
+    await setDoc(doc(db, "game", "request"), { active: true, responses: {}, triggered: false });
+};
+
+window.respondConsent = async (yes) => {
+    const ref = doc(db, "game", "request");
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+    let resp = snap.data().responses || {};
+    resp[myID] = yes;
+    await updateDoc(ref, { responses: resp });
+};
+
+onSnapshot(doc(db, "game", "request"), async (snap) => {
+    const data = snap.data();
+    if (!data || !data.active) { document.getElementById("gameConsent").style.display = "none"; return; }
+    const responses = data.responses || {};
+    const yesCount = Object.values(responses).filter(v => v === true).length;
+    document.getElementById("voteStatus").textContent = `${yesCount} / 3 Ready`;
+    document.getElementById("gameConsent").style.display = responses[myID] !== undefined ? "none" : "block";
+
+    if (yesCount >= 3 && !data.triggered && !isProcessing) {
+        isProcessing = true;
+        const firstId = Object.keys(responses)[0];
+        if (myID === firstId) {
+            await updateDoc(doc(db, "game", "request"), { triggered: true });
+            await postSys("🚨 3 PLAYERS READY! <br>Roles reveal in 30 SECONDS.");
+        }
+        
+        // Changed to 30 seconds to make it faster for testing
+        setTimeout(async () => {
+            if (myID === firstId) {
+                const topics = ["Haewon's toilet", "Roblox", "YouTube", "Jay's panties", "Gaspy's femboy", "dildo", "Star's cat furry", "Phone"];
+                const uSnap = await getDocs(collection(db, "users"));
+                const players = [];
+                const now = Date.now();
+                uSnap.forEach(u => { if (now - u.data().lastSeen < 30000) players.push(u.data().username); });
+
+                if (players.length > 0) {
+                    const selectedImposter = players[Math.floor(Math.random() * players.length)];
+                    const selectedTopic = topics[Math.floor(Math.random() * topics.length)];
+                    
+                    // Update the global session for everyone
+                    await setDoc(doc(db, "game", "session"), { 
+                        imposter: selectedImposter, 
+                        topic: selectedTopic, 
+                        rolesActive: true 
+                    });
+                    await updateDoc(doc(db, "game", "request"), { active: false });
+                    await postSys("🎭 <b>ROLES REVEALED!</b> Check the top bar.");
+                }
+            }
+            isProcessing = false; 
+        }, 30000); 
+    }
 });
 
 if (username) {
-  document.getElementById("chatApp").style.display = "flex";
-  document.getElementById("loginScreen").style.display = "none";
-  document.getElementById("userDisplay").textContent = username;
+    document.getElementById("chatApp").style.display = "flex";
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("userDisplay").textContent = username;
+    document.getElementById("userDisplay").style.color = myColor;
 }
 </script>
 </body>
