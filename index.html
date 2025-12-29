@@ -4,110 +4,96 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mini Room - Imposter Game</title>
-
 <style>
 * { box-sizing: border-box; }
-
-body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #121212;
-    color: white;
-}
+body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #121212; color: white; overflow: hidden; }
 
 /* LOGIN SCREEN */
-#loginScreen {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-image: url("https://i.pinimg.com/originals/d5/84/0b/d5840b194bc468e606984aa99f6558c8.gif");
-    background-size: cover;
-    background-position: center;
-    position: relative;
+#loginScreen { 
+    height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; 
+    background-image: url("https://i.pinimg.com/originals/d5/84/0b/d5840b194bc468e606984aa99f6558c8.gif"); 
+    background-size: cover; background-position: center; position: relative; z-index: 10;
 }
-
-#loginScreen::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-}
-
+#loginScreen::before { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
 #loginScreen * { position: relative; z-index: 2; }
-#loginScreen h2 { margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
-#loginScreen input, #loginScreen button { margin: 8px; padding: 12px; border-radius: 8px; border: none; font-size: 1rem; }
-#loginScreen input { width: 260px; color: #000; }
-#loginScreen button { background: #2196f3; color: white; cursor: pointer; font-weight: bold; width: 120px; }
-#loginScreen button:hover { background: #1976d2; }
+#loginScreen input { margin: 10px; padding: 12px; width: 260px; border-radius: 8px; border: none; }
 
-/* CHAT APP */
-.app { height: 100vh; display: none; flex-direction: column; background: #1e2134; }
-.header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #2b2b3a; border-bottom: 1px solid #3d3d4d; }
-.logo-container { display: flex; align-items: center; gap: 10px; }
-.logo { width: 32px; height: 32px; object-fit: contain; }
+/* MAIN LAYOUT */
+.app { height: 100vh; display: none; flex-direction: row; background: #1e2134; }
+.sidebar { width: 200px; background: #2b2b3a; border-right: 1px solid #444; display: flex; flex-direction: column; padding: 15px; }
+.player-item { padding: 5px 0; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+.status-dot { width: 8px; height: 8px; background: #4caf50; border-radius: 50%; }
+
+.chat-main { flex: 1; display: flex; flex-direction: column; position: relative; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: #2b2b3a; border-bottom: 1px solid #444; }
+.logo { width: 35px; height: 35px; vertical-align: middle; border-radius: 50%; }
 
 #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-.message { padding: 4px 8px; border-radius: 4px; line-height: 1.4; word-wrap: break-word; }
+.message { padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.05); white-space: pre-wrap; }
+
+button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; }
+.btn-rules { background: #ff9800; color: white; padding: 5px 10px; margin-right: 5px; }
+.btn-leave { background: #f44336; color: white; padding: 5px 10px; }
+.btn-send { background: #2196f3; color: white; padding: 0 20px; }
+.btn-start-game { background: #673ab7; color: white; padding: 12px 25px; border-radius: 25px; }
+
+.gameConsent { 
+    display: none; padding: 20px; text-align: center; background: #fff; color: #222; 
+    border-radius: 12px; position: absolute; top: 50%; left: 50%; 
+    transform: translate(-50%, -50%); width: 320px; box-shadow: 0 0 30px rgba(0,0,0,0.7); z-index: 1000; 
+}
 
 .inputBar { display: flex; padding: 15px; background: #2b2b3a; gap: 10px; }
 .inputBar input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #3d3d4d; color: white; outline: none; }
-.inputBar button { padding: 0 20px; border-radius: 8px; border: none; background: #2196f3; color: white; cursor: pointer; font-weight: bold; }
-
-.gameBar { padding: 10px; background: #121212; text-align: center; border-top: 1px solid #333; }
-.gameBar button { padding: 10px 20px; border-radius: 20px; border: none; background: #673ab7; color: white; cursor: pointer; font-weight: bold; }
-.gameBar button:hover { background: #5e35b1; }
-
-.gameConsent { display: none; padding: 15px; text-align: center; background: #fff; color: #222; border-radius: 12px 12px 0 0; position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); z-index: 100; }
-.gameConsent button { margin: 5px; padding: 8px 25px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
-.btn-yes { background: #4caf50; color: white; }
-.btn-no { background: #f44336; color: white; }
-
-#userDisplay { font-weight: bold; color: #4fc3f7; margin-right: 10px; }
-.logout-btn { background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
 </style>
 </head>
-
 <body>
 
 <div id="loginScreen">
-  <h2>Mini Room Chat</h2>
+  <h2 style="color:white;">Mini Room Chat</h2>
   <input id="usernameInput" placeholder="Enter Username...">
-  <div style="display:flex; align-items:center; gap:10px;">
-    <span>Pick Color:</span>
-    <input type="color" id="colorPicker" value="#3498db" style="width:50px; padding:2px;">
+  <div style="color:white; margin-bottom:10px;">
+    Pick Color: <input type="color" id="colorPicker" value="#3498db" style="width:50px; padding:0; height:30px; vertical-align:middle;">
   </div>
-  <button onclick="login()">JOIN</button>
+  <button onclick="login()" style="padding:12px 40px; background:#2196f3; color:white;">JOIN</button>
 </div>
 
 <div class="app" id="chatApp">
-  <div class="header">
-    <div class="logo-container">
-        <img class="logo" src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHQzeTY2Nnl6aWs1aHNzYjZqbjBiYTMza2cxaGpzc3E3ODh4cGttcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/OFBdpHZAfanrMB5RWJ/giphy.gif"> 
-        <b>MINI ROOM</b>
+  <div class="sidebar">
+    <h3>Online (<span id="playerCount">0</span>)</h3>
+    <div id="playerList"></div>
+  </div>
+
+  <div class="chat-main">
+    <div class="header">
+        <div>
+            <img class="logo" src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHQzeTY2Nnl6aWs1aHNzYjZqbjBiYTMza2cxaGpzc3E3ODh4cGttcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/OFBdpHZAfanrMB5RWJ/giphy.gif">
+            <b>MINI ROOM</b>
+        </div>
+        <div>
+            <button class="btn-rules" onclick="showRules()">Rules</button>
+            <span id="userDisplay" style="color:#4fc3f7; margin-right:10px; font-weight:bold;"></span> 
+            <button class="btn-leave" onclick="logout()">Leave</button>
+        </div>
     </div>
-    <div>
-        <span id="userDisplay"></span> 
-        <button class="logout-btn" onclick="logout()">Leave</button>
+
+    <div id="messages"></div>
+
+    <div id="gameConsent" class="gameConsent">
+      <h3 style="margin-top:0;">🎮 Game Invite</h3>
+      <p id="voteStatus">Checking players...</p>
+      <button style="background:#4caf50; color:white; padding: 10px 20px;" onclick="respondConsent(true)">YES</button>
+      <button style="background:#f44336; color:white; padding: 10px 20px;" onclick="respondConsent(false)">NO</button>
     </div>
-  </div>
 
-  <div id="messages"></div>
+    <div class="inputBar">
+      <input id="messageInput" placeholder="Type a message...">
+      <button class="btn-send" onclick="sendMessage()">SEND</button>
+    </div>
 
-  <div id="gameConsent" class="gameConsent">
-    <p style="font-weight:bold; margin-bottom:10px;">Start Imposter Game?</p>
-    <button class="btn-yes" onclick="respondConsent(true)">YES</button>
-    <button class="btn-no" onclick="respondConsent(false)">NO</button>
-  </div>
-
-  <div class="inputBar">
-    <input id="messageInput" placeholder="Type a message...">
-    <button onclick="sendMessage()">SEND</button>
-  </div>
-
-  <div class="gameBar">
-    <button onclick="startGameRequest()">😈 START IMPOSTER GAME</button>
+    <div style="padding:10px; text-align:center; background:#121212;">
+      <button class="btn-start-game" onclick="startGameRequest()">😈 START IMPOSTER GAME</button>
+    </div>
   </div>
 </div>
 
@@ -115,7 +101,6 @@ body {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDoc, updateDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// -------- FIREBASE CONFIG --------
 const firebaseConfig = {
   apiKey: "AIzaSyA3wCv1DIdjlPS-zEVQJXhjYsiC3G2dBJY",
   authDomain: "mini-chatroom-5710b.firebaseapp.com",
@@ -124,103 +109,73 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// -------- DOM ELEMENTS --------
-const loginScreen = document.getElementById("loginScreen");
-const chatApp = document.getElementById("chatApp");
-const userDisplay = document.getElementById("userDisplay");
-const messagesDiv = document.getElementById("messages");
-const consentDiv = document.getElementById("gameConsent");
-const inputEl = document.getElementById("messageInput");
-
-// -------- GAME STATE --------
 let username = localStorage.getItem("username") || "";
-let players = [];
-let gameState = { phase: "waiting" };
+let userColor = localStorage.getItem("userColor") || "#ffffff";
+let onlineCount = 0;
 
-const topics = {
-  Place: ["Hotel", "Beach", "School", "Cinema", "Club", "Gym", "Airport"],
-  Fruit: ["Durian", "Banana", "Strawberry", "Mango", "Watermelon"],
-  Food: ["Pizza", "Burger", "Sushi", "Pasta", "Taco"],
-  Item: ["Laptop", "Smartwatch", "Umbrella", "Backpack"]
+// --- UTILS ---
+async function sendSystem(msg) {
+  await addDoc(collection(db, "messages"), { user: "SYSTEM", text: msg, time: Date.now() });
+}
+
+window.showRules = () => {
+    alert("📜 GAME RULES:\n1. Everyone online must say YES.\n2. One person is the IMPOSTER.\n3. Victims know the topic.\n4. Find the imposter!");
 };
 
-// -------- CORE FUNCTIONS --------
-
-async function sendSystem(msg) {
-  await addDoc(collection(db, "messages"), { 
-    user: "SYSTEM", 
-    text: msg, 
-    time: Date.now() 
-  });
-}
-
-async function fetchPlayers() {
-  const snap = await getDocs(collection(db, "users"));
-  players = [];
-  snap.forEach(d => players.push(d.id));
-}
-
-// -------- WINDOW GLOBALS (For HTML onclick) --------
-
+// --- AUTH ---
 window.login = async () => {
   const name = document.getElementById("usernameInput").value.trim();
-  if (!name) return alert("Please enter a username!");
+  if (!name) return alert("Enter a name!");
   
   username = name;
+  userColor = document.getElementById("colorPicker").value;
   localStorage.setItem("username", username);
-  const color = document.getElementById("colorPicker").value;
-
-  await setDoc(doc(db, "users", username), { username, color });
+  localStorage.setItem("userColor", userColor);
   
-  loginScreen.style.display = "none";
-  chatApp.style.display = "flex";
-  userDisplay.textContent = username;
-
-  listenMessages();
-  fetchPlayers();
-  await sendSystem(`👋 ${username} joined the chat!`);
+  await setDoc(doc(db, "users", username), { username, color: userColor });
+  await sendSystem(`👋 ${username} has joined!`);
+  
+  // SMALL DELAY TO ENSURE FIREBASE SEES THE MESSAGE
+  setTimeout(() => { location.reload(); }, 800);
 };
 
 window.logout = async () => {
-  if (!username) return;
-  if (gameState.phase !== "waiting") {
-    if (!confirm("Game is active! If you leave, the game might break. Leave?")) return;
-  }
-  
-  await sendSystem(`🚪 ${username} left the chat.`);
+  await sendSystem(`🚪 ${username} left.`);
   await deleteDoc(doc(db, "users", username));
-  localStorage.removeItem("username");
+  localStorage.clear();
   location.reload();
 };
 
 window.sendMessage = async () => {
-  const text = inputEl.value.trim();
-  if (!text) return;
-  
-  const userSnap = await getDoc(doc(db, "users", username));
-  const color = userSnap.exists() ? userSnap.data().color : "#ffffff";
-  
-  inputEl.value = "";
-  await addDoc(collection(db, "messages"), { 
-    user: username, 
-    text: text, 
-    time: Date.now(), 
-    color: color 
-  });
+  const input = document.getElementById("messageInput");
+  const text = input.value.trim();
+  if (!text || !username) return;
+  input.value = "";
+  await addDoc(collection(db, "messages"), { user: username, text: text, time: Date.now(), color: userColor });
 };
 
-inputEl.addEventListener("keydown", (e) => { if(e.key === "Enter") window.sendMessage(); });
+document.getElementById("messageInput").addEventListener("keydown", (e) => { if(e.key === "Enter") window.sendMessage(); });
 
-// -------- GAME LOGIC --------
+// --- SIDEBAR SYNC ---
+onSnapshot(collection(db, "users"), (snap) => {
+    const listDiv = document.getElementById("playerList");
+    listDiv.innerHTML = "";
+    onlineCount = snap.size;
+    document.getElementById("playerCount").textContent = onlineCount;
+    snap.forEach(d => {
+        const p = d.data();
+        const div = document.createElement("div");
+        div.className = "player-item";
+        div.innerHTML = `<div class="status-dot"></div> <span style="color:${p.color}">${p.username}</span>`;
+        listDiv.appendChild(div);
+    });
+});
 
+// --- GAME LOGIC ---
 window.startGameRequest = async () => {
-  await fetchPlayers();
-  if (players.length < 3) {
-    return alert("You need at least 3 players online to start!");
-  }
-  const ref = doc(db, "game", "request");
-  await setDoc(ref, { active: true, responses: {}, time: Date.now() });
-  await sendSystem(`📢 ${username} wants to start the Imposter Game! Everyone vote now.`);
+  if (onlineCount < 3) return alert("You need at least 3 players online!");
+  await setDoc(doc(db, "game", "request"), { active: true, responses: {}, time: Date.now() });
+  await sendSystem(`📢 ${username} started a game request! Everyone check your screen.`);
 };
 
 window.respondConsent = async (yes) => {
@@ -228,106 +183,97 @@ window.respondConsent = async (yes) => {
   const snap = await getDoc(ref);
   if (!snap.exists()) return;
 
-  const data = snap.data();
-  const responses = data.responses || {};
+  const responses = snap.data().responses || {};
   responses[username] = yes;
-
   await updateDoc(ref, { responses });
-  consentDiv.style.display = "none"; // Hide UI for this user immediately
 
-  const status = yes ? "✅ joined" : "❌ declined";
-  await sendSystem(`${username} ${status} the game.`);
-
-  // Logic to count
-  const yesCount = Object.values(responses).filter(v => v === true).length;
-  const noCount = Object.values(responses).filter(v => v === false).length;
-
-  if (noCount > 0) {
-    await sendSystem("⚠️ Game Canceled: Someone declined the invite.");
+  if (yes === false) {
+    await sendSystem(`❌ ${username} said NO. Canceled.`);
     await setDoc(ref, { active: false, responses: {} });
-  } else if (yesCount >= 3) {
-    window.startGame();
-    await setDoc(ref, { active: false, responses: {} });
+  } else {
+    await sendSystem(`✅ ${username} is ready!`);
+    const yesCount = Object.values(responses).filter(v => v === true).length;
+    
+    if (yesCount >= onlineCount) {
+      window.startGame();
+      await setDoc(ref, { active: false, responses: {} });
+    }
   }
 };
 
-window.startGame = () => {
-  gameState.phase = "playing";
-  
-  const impIndex = Math.floor(Math.random() * players.length);
-  const imposter = players[impIndex];
-  
-  const cats = Object.keys(topics);
-  const cat = cats[Math.floor(Math.random() * cats.length)];
-  const topic = topics[cat][Math.floor(Math.random() * topics[cat].length)];
+window.startGame = async () => {
+  // GET LATEST PLAYERS FROM DB TO ASSIGN ROLES
+  const snap = await getDocs(collection(db, "users"));
+  const playerList = [];
+  snap.forEach(d => playerList.push(d.id));
 
-  // 1. Post Rules
-  const rules = `
-📜 GAME RULES:
+  const impIndex = Math.floor(Math.random() * playerList.length);
+  const imposter = playerList[impIndex];
+  const topics = ["Pizza", "Cinema", "Airplane", "Library", "Beach", "Gym"];
+  const topic = topics[Math.floor(Math.random() * topics.length)];
+
+  await sendSystem(`📜 GAME RULES:
 1. One player is the 😈 IMPOSTER.
-2. Everyone else knows the topic: [${cat}].
-3. Discussion: Ask questions to find the imposter.
-4. Imposter: Try to guess the topic and blend in!
-5. Vote: Use the chat to agree on who to kick.`;
-  
-  sendSystem(rules);
-  sendSystem("🎮 GAME BEGUN! Look at the alert on your screen for your role.");
+2. Everyone else knows the topic.
+3. Find the imposter!`);
 
-  // 2. Alert Roles
-  players.forEach(p => {
-    if (p === username) {
-      if (p === imposter) {
-        alert("😈 ROLE: YOU ARE THE IMPOSTER!\nBlend in and don't let them catch you.");
-      } else {
-        alert(`😇 ROLE: YOU ARE A VICTIM.\nTopic: ${topic}\nCategory: ${cat}`);
-      }
-    }
+  await sendSystem("🎮 GAME START! Everyone look at your Role Alert.");
+
+  // TRIGGER ROLE ASSIGNMENT IN THE DATABASE
+  await setDoc(doc(db, "game", "active_session"), {
+    imposter: imposter,
+    topic: topic,
+    players: playerList,
+    time: Date.now()
   });
 };
 
-// -------- LISTENERS --------
-
-function listenMessages() {
-  const q = query(collection(db, "messages"), orderBy("time"));
-  onSnapshot(q, (snapshot) => {
-    messagesDiv.innerHTML = "";
-    snapshot.forEach((doc) => {
-      const m = doc.data();
-      const div = document.createElement("div");
-      div.className = "message";
-      
-      if (m.user === "SYSTEM") {
-        div.style.color = "#ffcc00";
-        div.style.background = "rgba(255, 204, 0, 0.1)";
-        div.style.fontWeight = "bold";
-      } else {
-        div.style.color = m.color || "white";
-      }
-      
-      div.textContent = `${m.user}: ${m.text}`;
-      messagesDiv.appendChild(div);
-    });
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  });
-}
-
-onSnapshot(doc(db, "game", "request"), (snap) => {
-  if (!snap.exists()) return;
-  const data = snap.data();
-  // Show pop-up only if game is active AND user hasn't voted yet
-  const hasVoted = data.responses && data.responses[username] !== undefined;
-  consentDiv.style.display = (data.active && !hasVoted) ? "block" : "none";
+// --- GLOBAL SESSION LISTENER (THIS GIVES THE ROLE) ---
+onSnapshot(doc(db, "game", "active_session"), (snap) => {
+    const session = snap.data();
+    if (session && Date.now() - session.time < 5000) { // Only show if game just started
+        if (username === session.imposter) {
+            alert("😈 ROLE: IMPOSTER\nBlend in! You don't know the topic.");
+        } else if (session.players.includes(username)) {
+            alert(`😇 ROLE: VICTIM\nTopic: ${session.topic}`);
+        }
+    }
 });
 
-// -------- INITIALIZE --------
-if (username) {
-  loginScreen.style.display = "none";
-  chatApp.style.display = "flex";
-  userDisplay.textContent = username;
-  listenMessages();
-  fetchPlayers();
-}
+// --- MESSAGE LISTENER ---
+onSnapshot(query(collection(db, "messages"), orderBy("time")), (snap) => {
+  const mDiv = document.getElementById("messages");
+  mDiv.innerHTML = "";
+  snap.forEach(d => {
+    const m = d.data();
+    const div = document.createElement("div");
+    div.className = "message";
+    div.style.color = m.user === "SYSTEM" ? "#ffcc00" : m.color || "white";
+    div.textContent = `${m.user}: ${m.text}`;
+    mDiv.appendChild(div);
+  });
+  mDiv.scrollTop = mDiv.scrollHeight;
+});
 
+// --- CONSENT LISTENER ---
+onSnapshot(doc(db, "game", "request"), (snap) => {
+  const data = snap.data();
+  const consentDiv = document.getElementById("gameConsent");
+  if (data && data.active) {
+    const hasVoted = data.responses && data.responses[username] !== undefined;
+    const currentYes = Object.values(data.responses).filter(v => v === true).length;
+    document.getElementById("voteStatus").textContent = `Ready: ${currentYes} / ${onlineCount}`;
+    consentDiv.style.display = hasVoted ? "none" : "block";
+  } else {
+    consentDiv.style.display = "none";
+  }
+});
+
+if (username) {
+  document.getElementById("chatApp").style.display = "flex";
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("userDisplay").textContent = username;
+}
 </script>
 </body>
 </html>
