@@ -196,8 +196,8 @@ body {
     </div>
     <div class="gameConsent" id="gameConsent">
   <span>Do you want to join the Imposter Game?</span>
-  <button onclick="respondConsent('yes')">Yes</button>
-  <button onclick="respondConsent('no')">No</button>
+  <button onclick="consentYes('yes')">Yes</button>
+  <button onclick="consentNo('no')">No</button>
 </div>
 
 </div>
@@ -354,78 +354,214 @@ async function fetchPlayers() {
   usersSnap.forEach(doc=>players.push(doc.id));
 }
 
-// ----- GAME CONSENT -----
-startGameBtn.addEventListener("click", async () => {
-  await fetchPlayers();
-  if(players.length < 3) { alert("Need at least 3 players!"); return; }
+// // ----- GAME CONSENT -----
+// startGameBtn.addEventListener("click", async () => {
+//   await fetchPlayers();
+//   if(players.length < 2) { alert("Need at least 2players!"); return; }
 
-  consentDiv.style.display = "block";
-  players.forEach(p => gameState.awaitingConsent[p] = null);
-  sendSystemMessage("Do you want to join the Imposter Game?");
+//   consentDiv.style.display = "block";
+//   players.forEach(p => gameState.awaitingConsent[p] = null);
+//   sendSystemMessage("Do you want to join the Imposter Game?");
+// });
+
+// window.respondConsent = function(answer){
+//   if(gameState.phase !== "waiting") return;
+
+//   gameState.awaitingConsent[username] = (answer.toLowerCase() === "yes");
+//   sendSystemMessage(`${username} responded: ${answer}`);
+//   consentDiv.style.display = "none";
+
+//   const yesCount = Object.values(gameState.awaitingConsent).filter(v => v).length;
+//   const totalAnswered = Object.values(gameState.awaitingConsent).filter(v => v!==null).length;
+//   const totalPlayers = Object.values(gameState.awaitingConsent).length;
+
+//   if(totalPlayers >=5 && yesCount >=5) startGamePhase();
+//   else if(totalPlayers <5 && yesCount >=3 && totalAnswered===totalPlayers) startGamePhase();
+//   else if(totalAnswered===totalPlayers && yesCount <3) {
+//     sendSystemMessage("Not enough players agreed. Game canceled.");
+//     gameState.awaitingConsent = {};
+//   }
+// };
+
+
+
+// // ----- START GAME PHASE -----
+// function startGamePhase(){
+//   changeUsernameBtn.disabled = true;
+//   changeUsernameBtn.style.opacity = 0.5;
+//   assignRoles();
+// }
+
+// // ----- ASSIGN ROLES -----
+// function assignRoles() {
+//   const impIndex = Math.floor(Math.random()*players.length);
+//   gameState.imposter = players[impIndex];
+//   gameState.victims = players.filter(p=>p!==gameState.imposter);
+//   const { category, topic } = getRandomTopic();
+//   gameState.topic = topic;
+
+//   // Rules
+//   const rules = `📝 Game Rules:
+// 1. Stay muted during discussion.
+// 2. Read your role & topic carefully.
+// 3. Victims receive a topic (same for all victims).
+// 4. Imposter can /kill one player during discussion.
+// 5. After discussion, vote using /vote [username].
+// 6. Game lasts 2 rounds.`;
+//   sendSystemMessage(rules);
+
+//   // Private messages
+//   players.forEach(p=>{
+//     let msg;
+//     if(p===gameState.imposter) msg = "You are the IMPOSTER!";
+//     else msg = `You are a VICTIM.\nTopic: ${topic} (${category})`;
+//     if(p===username) alert(msg);
+//     addDoc(collection(db,"privateMessages"), {to:p,text:msg,time:Date.now()});
+//   });
+
+//   gameState.phase="discussion";
+//   sendSystemMessage(`Discussion phase started! 10 minutes until voting.`);
+//   setTimeout(()=>{
+//     gameState.phase="voting";
+//     sendSystemMessage("Discussion ended! Type /vote [username] to vote.");
+//   }, 10*60*1000);
+// }
+
+// // ----- COMMAND HANDLER -----
+// function handleCommand(user,text){
+//   if(text.startsWith("/kill ")){
+//     const target=text.split(" ")[1];
+//     if(user===gameState.imposter && gameState.victims.includes(target)){
+//       gameState.killed.push(target);
+//       sendSystemMessage(`${user} killed ${target}!`);
+//     }
+//   } else if(text.startsWith("/vote ")){
+//     const target=text.split(" ")[1];
+//     gameState.votes[user]=target;
+//     sendSystemMessage(`${user} voted for ${target}!`);
+//     checkVotes();
+//   }
+// }
+
+// // ----- CHECK VOTES -----
+// function checkVotes(){
+//   const votes=gameState.votes;
+//   const voteCounts={};
+//   for(const v in votes){
+//     if(!voteCounts[votes[v]]) voteCounts[votes[v]]=0;
+//     voteCounts[votes[v]]++;
+//   }
+//   for(const person in voteCounts){
+//     if(voteCounts[person]>=Math.ceil(players.length/2)){
+//       if(person===gameState.imposter) sendSystemMessage(`Imposter ${person} got voted out! Victims win this round!`);
+//       else sendSystemMessage(`Victim ${person} got voted out! Imposter wins this round!`);
+//       gameState.round++;
+//       gameState.votes={};
+//       if(gameState.round>2){
+//         sendSystemMessage("Game ended after 2 rounds!");
+//         gameState.phase="waiting";
+//         changeUsernameBtn.disabled=false;
+//         changeUsernameBtn.style.opacity=1;
+//       } else assignRoles();
+//     }
+//   }
+// }
+
+// // ----- ENTER KEY -----
+// input.addEventListener("keydown", e=>{ if(e.key==="Enter") sendMessage(); });
+
+// // ----- AUTO-ENTER CHAT IF USER EXISTS -----
+// if(username) enterChat();
+
+// ---------------- GAME CONSENT ----------------
+startGameBtn.addEventListener("click", async()=>{
+  await fetchPlayers();
+  if(players.length<3){ alert("Need at least 3 players!"); return; }
+
+  // create consent request in Firestore
+  const consentDoc = doc(db,"gameConsent","current");
+  await setDoc(consentDoc,{initiator:username,responses:{},timestamp:Date.now()});
+  sendSystemMessage(`${username} wants to start an Imposter Game!`);
 });
 
-window.respondConsent = function(answer){
-  if(gameState.phase !== "waiting") return;
+// Listen for consent requests
+const consentCollection = collection(db,"gameConsent");
+onSnapshot(doc(db,"gameConsent","current"), snapshot=>{
+  if(!snapshot.exists()) return;
+  const data = snapshot.data();
+  if(data.responses[username] !== undefined) return; // already responded
 
-  gameState.awaitingConsent[username] = (answer.toLowerCase() === "yes");
+  // show consent popup
+  consentDiv.style.display = "block";
+  document.getElementById("consentYes").onclick = ()=>respondConsent("yes",snapshot.ref);
+  document.getElementById("consentNo").onclick = ()=>respondConsent("no",snapshot.ref);
+});
+
+async function respondConsent(answer, ref){
+  const data = (await ref.get()).data();
+  const responses = data.responses || {};
+  responses[username] = answer.toLowerCase()==="yes";
+  await updateDoc(ref,{responses});
+
   sendSystemMessage(`${username} responded: ${answer}`);
   consentDiv.style.display = "none";
 
-  const yesCount = Object.values(gameState.awaitingConsent).filter(v => v).length;
-  const totalAnswered = Object.values(gameState.awaitingConsent).filter(v => v!==null).length;
-  const totalPlayers = Object.values(gameState.awaitingConsent).length;
+  const yesCount = Object.values(responses).filter(v=>v).length;
+  const totalAnswered = Object.values(responses).length;
+  const totalPlayers = players.length;
 
-  if(totalPlayers >=5 && yesCount >=5) startGamePhase();
-  else if(totalPlayers <5 && yesCount >=3 && totalAnswered===totalPlayers) startGamePhase();
-  else if(totalAnswered===totalPlayers && yesCount <3) {
+  if(totalPlayers>=5 && yesCount>=5) startGame();
+  else if(totalPlayers<5 && yesCount>=3 && totalAnswered===totalPlayers) startGame();
+  else if(totalAnswered===totalPlayers && yesCount<3){
     sendSystemMessage("Not enough players agreed. Game canceled.");
-    gameState.awaitingConsent = {};
+    // delete consent doc so next attempt works
+    await setDoc(doc(db,"gameConsent","current"),{},{merge:true});
   }
-};
+}
 
-// ----- START GAME PHASE -----
-function startGamePhase(){
+// ---------------- START GAME ----------------
+window.startGame = async function(){
   changeUsernameBtn.disabled = true;
-  changeUsernameBtn.style.opacity = 0.5;
+  changeUsernameBtn.style.opacity=0.5;
   assignRoles();
 }
 
-// ----- ASSIGN ROLES -----
-function assignRoles() {
+// ---------------- ASSIGN ROLES ----------------
+function assignRoles(){
   const impIndex = Math.floor(Math.random()*players.length);
   gameState.imposter = players[impIndex];
   gameState.victims = players.filter(p=>p!==gameState.imposter);
-  const { category, topic } = getRandomTopic();
+  const {category, topic} = getRandomTopic();
   gameState.topic = topic;
 
-  // Rules
+  // Show rules
   const rules = `📝 Game Rules:
 1. Stay muted during discussion.
 2. Read your role & topic carefully.
-3. Victims receive a topic (same for all victims).
-4. Imposter can /kill one player during discussion.
-5. After discussion, vote using /vote [username].
+3. Victims receive the same topic.
+4. Imposter can /kill one player.
+5. Vote using /vote [username].
 6. Game lasts 2 rounds.`;
   sendSystemMessage(rules);
 
-  // Private messages
   players.forEach(p=>{
     let msg;
-    if(p===gameState.imposter) msg = "You are the IMPOSTER!";
-    else msg = `You are a VICTIM.\nTopic: ${topic} (${category})`;
+    if(p===gameState.imposter) msg="You are the IMPOSTER!";
+    else msg=`You are a VICTIM.\nTopic: ${topic} (${category})`;
     if(p===username) alert(msg);
-    addDoc(collection(db,"privateMessages"), {to:p,text:msg,time:Date.now()});
+    addDoc(collection(db,"privateMessages"),{to:p,text:msg,time:Date.now()});
   });
 
   gameState.phase="discussion";
   sendSystemMessage(`Discussion phase started! 10 minutes until voting.`);
+
   setTimeout(()=>{
     gameState.phase="voting";
     sendSystemMessage("Discussion ended! Type /vote [username] to vote.");
-  }, 10*60*1000);
+  },10*60*1000);
 }
 
-// ----- COMMAND HANDLER -----
+// ---------------- COMMAND HANDLER ----------------
 function handleCommand(user,text){
   if(text.startsWith("/kill ")){
     const target=text.split(" ")[1];
@@ -441,7 +577,7 @@ function handleCommand(user,text){
   }
 }
 
-// ----- CHECK VOTES -----
+// ---------------- CHECK VOTES ----------------
 function checkVotes(){
   const votes=gameState.votes;
   const voteCounts={};
@@ -451,10 +587,12 @@ function checkVotes(){
   }
   for(const person in voteCounts){
     if(voteCounts[person]>=Math.ceil(players.length/2)){
-      if(person===gameState.imposter) sendSystemMessage(`Imposter ${person} got voted out! Victims win this round!`);
-      else sendSystemMessage(`Victim ${person} got voted out! Imposter wins this round!`);
+      if(person===gameState.imposter) sendSystemMessage(`Imposter ${person} got voted out! Victims win!`);
+      else sendSystemMessage(`Victim ${person} got voted out! Imposter wins!`);
+
       gameState.round++;
       gameState.votes={};
+
       if(gameState.round>2){
         sendSystemMessage("Game ended after 2 rounds!");
         gameState.phase="waiting";
@@ -465,13 +603,11 @@ function checkVotes(){
   }
 }
 
-// ----- ENTER KEY -----
 input.addEventListener("keydown", e=>{ if(e.key==="Enter") sendMessage(); });
-
-// ----- AUTO-ENTER CHAT IF USER EXISTS -----
 if(username) enterChat();
 </script>
 
 
 </body>
 </html>
+
