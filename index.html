@@ -86,6 +86,31 @@ body {
     display: flex;
     justify-content: space-between;
 }
+    .topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(90deg, lch(9.64% 6.68 292.38), #2b2b3a);
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+
+    background-image: url("https://i.pinimg.com/originals/d5/84/0b/d5840b194bc468e606984aa99f6558c8.gif");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    position: relative;
+}
+    .logo{
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.title{
+  font-size: 18px;
+}
 
 #messages {
     flex: 1;
@@ -137,6 +162,10 @@ body {
     <div class="header">
         <span id="roomName">Unstable</span>
         <span id="userDisplay"></span>
+        <div class="topbar">
+        <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHQzeTY2Nnl6aWs1aHNzYjZqbjBiYTMza2cxaGpzc3E3ODh4cGttcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/OFBdpHZAfanrMB5RWJ/giphy.gif" class="logo">
+        <span class="title">Mini Room</span>
+    </div>
 
         <button onclick="logout()" style="margin-left:10px;">Change Username</button>
     </div>
@@ -311,3 +340,4 @@ function enableChat(){
 
 </body>
 </html>
+
