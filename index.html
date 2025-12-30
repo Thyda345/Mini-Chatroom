@@ -1,262 +1,393 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Room - Final Sync Fix</title>
-<style>
-* { box-sizing: border-box; }
-body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #121212; color: white; overflow: hidden; }
-#loginScreen { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #1a1a1a; position: relative; }
-#loginScreen input { margin: 10px; padding: 12px; width: 260px; border-radius: 8px; border: none; }
-.app { height: 100vh; display: none; flex-direction: row; background: #1e2134; }
-.sidebar { width: 180px; background: #2b2b3a; border-right: 1px solid #444; padding: 15px; overflow-y: auto; }
-.chat-main { flex: 1; display: flex; flex-direction: column; position: relative; height: 100vh; }
-.header { height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; background: #2b2b3a; border-bottom: 1px solid #444; }
-#roleCard { display: none; padding: 12px; text-align: center; font-weight: bold; font-size: 1.1rem; border-bottom: 3px solid rgba(0,0,0,0.5); }
-#messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-.message { padding: 8px 12px; border-radius: 6px; background: rgba(255,255,255,0.05); }
-.sys-msg { background: #ffcc00 !important; color: black !important; font-weight: bold; text-align: center; border-radius: 8px; }
-.inputBar { display: flex; padding: 10px; background: #2b2b3a; gap: 8px; }
-.inputBar input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #3d3d4d; color: white; }
-button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; padding: 10px 15px; }
-#gameConsent { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: white; color: black; padding: 25px; border-radius: 15px; z-index: 9999; text-align: center; width: 320px; box-shadow: 0 0 50px black; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Room - Topic Edition</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0a0a0c; color: #e0e0e0; overflow: hidden; }
+
+        /* Overlay UI */
+        .overlay-card { 
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); 
+            background: #2c3e50; border: 2px solid #3498db; padding: 15px 25px; 
+            border-radius: 12px; z-index: 9999; display: none; text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        #loginScreen { 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            background: url("https://i.pinimg.com/originals/d5/84/0b/d5840b194bc468e606984aa99f6558c8.gif") center/cover; 
+            position: relative; 
+            z-index: 10; 
+        }
+
+        #loginScreen::before { 
+            content: ""; 
+            position: absolute; 
+            inset: 0; 
+            background: rgba(0, 0, 0, 0.75); 
+            backdrop-filter: blur(4px); 
+        }
+        #loginContainer { 
+            position: relative; 
+            z-index: 2; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+
+        #loginContainer input { 
+            margin: 10px; 
+            padding: 15px; 
+            width: 280px; 
+            border-radius: 12px; 
+            border: 1px solid #444; 
+            background: #1a1a1a; 
+            color: white; 
+            outline: none; 
+        }
+
+        .app { 
+            height: 100vh; 
+            display: none; 
+            flex-direction: row; 
+            background: #0f0f13; 
+        }
+
+        .sidebar { 
+            width: 220px; 
+            background: #16161d; 
+            border-right: 1px solid #2d2d3d; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+
+        #playerList { 
+            flex: 1; 
+            overflow-y: auto; 
+            margin-top: 10px; 
+        }
+        
+        .chat-main { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+        }
+
+        .header { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 12px 20px; 
+            background: #16161d; 
+            border-bottom: 1px solid #2d2d3d; 
+        }
+        
+        #phaseTimerDisplay { 
+            background: #e74c3c; 
+            color: white; 
+            padding: 4px 10px; 
+            border-radius: 5px; 
+            font-family: monospace; 
+            font-weight: bold; 
+            display: none; 
+        }
+
+        #messages { 
+            flex: 1; 
+            padding: 20px; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+            background: #0f0f13; 
+        }
+
+        .message { 
+            padding: 10px 15px; 
+            border-radius: 12px; 
+            background: rgba(255, 255, 255, 0.05); 
+            max-width: 85%; 
+        }
+
+        .sys-msg { 
+            background: #f1c40f !important; 
+            color: #000 !important; 
+            font-weight: 900; 
+            text-align: center; 
+            max-width: 100%; 
+            border: 2px solid #000; 
+        }
+
+        .topic-msg { 
+            background: #3498db !important; 
+            color: white !important; 
+            font-style: italic; 
+            border: 1px solid #fff; 
+        }
+
+        .inputBar { 
+            display: flex; 
+            padding: 20px; 
+            background: #16161d; 
+            gap: 10px; 
+            border-top: 1px solid #2d2d3d; 
+        }
+
+        .inputBar input { 
+            flex: 1; 
+            padding: 14px;
+            border-radius: 10px; 
+            border: 1px solid #3d3d4d; 
+            background: #0a0a0c; 
+            color: white; 
+        }
+
+        button { 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 10px; 
+            font-weight: bold; 
+            padding: 10px 20px; 
+        }
+        
+    </style>
 </head>
 <body>
 
+<div id="inviteBox" class="overlay-card">
+    <p id="inviteText">Invitation</p>
+    <button id="joinBtn" style="background:#2ecc71; color:white;">ACCEPT & JOIN</button>
+</div>
+
+<div id="resetBox" class="overlay-card" style="border-color: #e67e22;">
+    <p>Reset Game? (<span id="resetCount">0</span>/2 Votes)</p>
+    <button id="resetYesBtn" style="background:#e67e22; color:white;">VOTE YES</button>
+</div>
+
 <div id="loginScreen">
-  <h2 style="color:white;">MINI ROOM</h2>
-  <input id="usernameInput" placeholder="Username...">
-  <input type="color" id="colorPicker" value="#3498db">
-  <button onclick="login()" style="background:#2196f3; color:white; width: 260px;">JOIN</button>
+    <div id="loginContainer">
+        <h1 style="color:white; letter-spacing: 5px;">MINI ROOM</h1>
+        <input id="usernameInput" placeholder="Enter Username...">
+        <input type="color" id="colorPicker" value="#3498db" style="height: 50px;">
+        <button id="loginBtn" style="background:#3498db; color:white; width:280px; margin-top: 10px;">ENTER SYSTEM</button>
+    </div>
 </div>
 
 <div class="app" id="chatApp">
-  <div class="sidebar">
-    <h3 style="font-size: 0.9rem;">ONLINE (<span id="playerCount">0</span>)</h3>
-    <div id="playerList"></div>
-  </div>
-  <div class="chat-main">
-    <div class="header">
-        <button onclick="resetGameManually()" style="background:#555; color:white; font-size:10px;">RESET</button>
-        <div><span id="userDisplay"></span> <button onclick="logout()" style="background:#f44336; color:white; padding:4px 8px;">Leave</button></div>
+    <div class="sidebar">
+        <h3>ONLINE (<span id="playerCount">0</span>)</h3>
+        <div id="playerList"></div>
+        <button id="startResetVote" style="background:#e67e22; color:white; font-size:11px; margin-top:10px;">VOTE RESET</button>
     </div>
-    <div id="roleCard"></div>
-    <div id="messages"></div>
-    <div class="inputBar">
-      <input id="messageInput" placeholder="Message..." autocomplete="off">
-      <button id="sendBtn" style="background:#2196f3; color:white;">SEND</button>
-    </div>
-    <div style="padding:10px; text-align:center; background:#121212;">
-      <button onclick="startGameRequest()" style="background:#673ab7; color:white; width:100%; max-width:200px;">😈 START GAME</button>
-    </div>
-  </div>
-</div>
-
-<div id="gameConsent">
-    <h3>Start Game?</h3>
-    <p id="voteStatus">Waiting...</p>
-    <div style="display:flex; gap:10px;">
-        <button id="yesBtn" onclick="respondConsent(true)" style="background:#4caf50; color:white; flex:1;">YES</button>
-        <button onclick="respondConsent(false)" style="background:#f44336; color:white; flex:1;">NO</button>
+    <div class="chat-main">
+        <div class="header">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <b style="color:#3498db;">MINI ROOM</b>
+                <span id="phaseTimerDisplay"></span>
+            </div>
+            <button id="logoutBtn" style="background:#e74c3c; color:white; padding:5px 10px;">LEAVE</button>
+        </div>
+        <div id="messages"></div>
+        <div class="inputBar">
+            <input id="messageInput" placeholder="Type a message..." autocomplete="off">
+            <button id="sendBtn" style="background:#3498db; color:white;">SEND</button>
+        </div>
+        <div style="padding:15px; background:#16161d; border-top:1px solid #2d2d3d;">
+            <button id="startBtn" style="background:#8e44ad; color:white; width:100%;">INVITE OTHERS TO PLAY</button>
+        </div>
     </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, updateDoc, deleteDoc, getDocs, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = { apiKey: "AIzaSyA3wCv1DIdjlPS-zEVQJXhjYsiC3G2dBJY", authDomain: "mini-chatroom-5710b.firebaseapp.com", projectId: "mini-chatroom-5710b" };
+const firebaseConfig = {
+    apiKey: "AIzaSyA3wCv1DIdjlPS-zEVQJXhjYsiC3G2dBJY",
+    authDomain: "mini-chatroom-5710b.firebaseapp.com",
+    projectId: "mini-chatroom-5710b"
+};
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Ensures every browser instance has a unique ID
-let myID = localStorage.getItem("myID") || Math.random().toString(36).slice(2, 11);
+let myID = localStorage.getItem("myID") || Math.random().toString(36).slice(2);
 localStorage.setItem("myID", myID);
 let username = localStorage.getItem("username") || "";
-let myColor = localStorage.getItem("userColor") || "#ffffff";
+let myColor = localStorage.getItem("userColor") || "#3498db";
+let myStatus = "alive";
 let isImposter = false;
-let killAlerted = false;
+let currentPhase = "";
+let countdownInterval = null;
 
-async function postSys(txt) {
-    await addDoc(collection(db, "messages"), { user: "SYSTEM", text: txt, time: Date.now(), isSystem: true });
+const TOPICS = [
+    "Haewon's bsdm",
+    "Crush",
+    "ex",
+    "Sugar Daddy",
+    "Emo",
+    "Ariana Grande",
+    "Bruno Mars",
+    "Daniel Caesar",
+    "Bathroom",
+    "Window",
+    "Phone",
+    "Goku's panties"
+];
+
+if(username) {
+    document.getElementById("loginScreen").style.display="none";
+    document.getElementById("chatApp").style.display="flex";
 }
 
-function postLocalSys(txt) {
-    const mDiv = document.getElementById("messages");
-    mDiv.innerHTML += `<div class="message sys-msg" style="background:#ff3d00 !important; color:white !important; border: 2px solid white;">[PRIVATE] ${txt}</div>`;
-    mDiv.scrollTop = mDiv.scrollHeight;
+async function postSys(text, isTopic = false) {
+    await addDoc(collection(db, "messages"), { 
+        user: "SYSTEM", text, time: Date.now(), isSystem: true, isTopic 
+    });
 }
 
-window.login = async () => {
+// Fixed Login
+document.getElementById("loginBtn").onclick = async () => {
     const name = document.getElementById("usernameInput").value.trim();
-    if (!name) return;
+    if(!name) return;
     localStorage.setItem("username", name);
     localStorage.setItem("userColor", document.getElementById("colorPicker").value);
-    await setDoc(doc(db, "users", myID), { username: name, color: document.getElementById("colorPicker").value, lastSeen: Date.now(), id: myID });
-    await postSys(`👋 <b>${name}</b> joined the room!`);
+    await setDoc(doc(db, "users", myID), { username: name, color: document.getElementById("colorPicker").value, status: "alive", id: myID });
     location.reload();
 };
 
-window.logout = async () => {
-    await postSys(`🏃 <b>${username}</b> left.`);
-    await deleteDoc(doc(db, "users", myID));
-    localStorage.clear();
-    location.reload();
-};
+/* ---------------- GAME LOOP ---------------- */
 
-// --- CORE FIX: UNIQUE READY SYSTEM ---
-window.startGameRequest = async () => {
-    const readySnap = await getDocs(collection(db, "readyPlayers"));
-    const batch = writeBatch(db);
-    readySnap.forEach(d => batch.delete(d.ref));
-    await batch.commit();
-
-    await setDoc(doc(db, "game", "request"), { active: true, triggered: false, time: Date.now() });
-    await postSys("🔔 <b>GAME REQUESTED!</b> Please click YES to start.");
-};
-
-window.respondConsent = async (val) => {
-    if(val === true) {
-        // Save using myID as key so multiple users don't overwrite each other
-        await setDoc(doc(db, "readyPlayers", myID), { name: username, ready: true });
-        await postSys(`✅ <b>${username}</b> is READY!`);
-    }
-    document.getElementById("gameConsent").style.display = "none";
-};
-
-onSnapshot(doc(db, "game", "request"), (snap) => {
+onSnapshot(doc(db, "game", "session"), async snap => {
     const data = snap.data();
-    if (data && data.active && !data.triggered) {
-        getDoc(doc(db, "readyPlayers", myID)).then(d => {
-            if(!d.exists()) document.getElementById("gameConsent").style.display = "block";
-        });
-    } else {
-        document.getElementById("gameConsent").style.display = "none";
+    if(!data || !data.active) return;
+    
+    currentPhase = data.phase;
+    isImposter = (username === data.imposter);
+
+    if(data.phase === "reveal") {
+        const roleMsg = isImposter ? "🤫 YOU ARE THE IMPOSTER!" : "😇 YOU ARE A CIVILIAN.";
+        document.getElementById("messages").innerHTML += `<div class="message sys-msg" style="background:#9b59b6 !important; color:white !important;">${roleMsg}</div>`;
     }
-});
 
-onSnapshot(collection(db, "readyPlayers"), async (snap) => {
-    const count = snap.size;
-    document.getElementById("voteStatus").textContent = `${count} Players Ready`;
+    if(countdownInterval) clearInterval(countdownInterval);
+    countdownInterval = setInterval(async () => {
+        const remaining = Math.max(0, Math.floor((data.timerEnd - Date.now())/1000));
+        document.getElementById("phaseTimerDisplay").style.display = "block";
+        document.getElementById("phaseTimerDisplay").textContent = remaining + "s";
 
-    const reqSnap = await getDoc(doc(db, "game", "request"));
-    if (count >= 3 && reqSnap.exists() && !reqSnap.data().triggered) {
-        const playerIds = snap.docs.map(d => d.id).sort();
-        if (myID === playerIds[0]) {
-            await updateDoc(doc(db, "game", "request"), { triggered: true });
-            await postSys("🚨 <b>3 PLAYERS READY!</b> Game starting...");
-            
-            setTimeout(async () => {
-                const uSnap = await getDocs(collection(db, "users"));
-                const players = [];
-                uSnap.forEach(u => players.push(u.data().username));
-                
-                const imposter = players[Math.floor(Math.random() * players.length)];
-                const topics = ["Roblox", "YouTube", "Food", "School", "Movies"];
-                
-                await setDoc(doc(db, "game", "session"), { 
-                    imposter, 
-                    topic: topics[Math.floor(Math.random() * topics.length)], 
-                    rolesActive: true, 
-                    round: 1 
-                });
-                await updateDoc(doc(db, "game", "request"), { active: false });
-            }, 3000);
-        }
-    }
-});
+        if(remaining <= 0) {
+            clearInterval(countdownInterval);
+            const users = await getDocs(collection(db, "users"));
+            const host = users.docs.map(d => d.id).sort()[0];
 
-// --- GAMEPLAY LOGIC ---
-onSnapshot(doc(db, "game", "session"), (snap) => {
-    const data = snap.data();
-    const card = document.getElementById("roleCard");
-    if (data && data.rolesActive) {
-        card.style.display = "block";
-        isImposter = (username === data.imposter);
-        if (isImposter) {
-            card.style.background = "#b71c1c";
-            card.innerHTML = `😈 YOU ARE THE IMPOSTER!`;
-            if(data.round === 2 && !killAlerted) {
-                postLocalSys("🔪 ROUND 2: Use <b>/kill username</b> privately!");
-                killAlerted = true;
+            if(myID === host) {
+                if(data.phase === "rules") {
+                    const names = users.docs.map(u => u.data().username);
+                    const imp = names[Math.floor(Math.random()*names.length)];
+                    await updateDoc(doc(db, "game", "session"), { phase: "reveal", timerEnd: Date.now() + 5000, imposter: imp });
+                } else if(data.phase === "reveal") {
+                    const randomTopic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+                    await postSys(`🗣️ DISCUSSION START! TOPIC: ${randomTopic}`, true);
+                    await updateDoc(doc(db, "game", "session"), { phase: "discussion", timerEnd: Date.now() + 25000 });
+                } else if(data.phase === "discussion") {
+                    await postSys("🗳️ VOTING START! /vote [Name]");
+                    await updateDoc(doc(db, "game", "session"), { phase: "voting", timerEnd: Date.now() + 20000 });
+                } else if(data.phase === "voting") {
+                    await postSys("🔪 IMPOSTER ROUND!");
+                    await updateDoc(doc(db, "game", "session"), { phase: "round2", timerEnd: Date.now() + 15000 });
+                } else if(data.phase === "round2") {
+                    const randomTopic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+                    await postSys(`🔄 ROUND OVER. NEW TOPIC: ${randomTopic}`, true);
+                    await updateDoc(doc(db, "game", "session"), { phase: "discussion", timerEnd: Date.now() + 25000 });
+                }
             }
-        } else {
-            card.style.background = "#2e7d32";
-            card.innerHTML = `😇 CIVILIAN | TOPIC: ${data.topic}`;
         }
-    } else {
-        card.style.display = "none";
-        killAlerted = false;
+    }, 1000);
+});
+
+// Message Rendering with Topic Support
+onSnapshot(query(collection(db, "messages"), orderBy("time")), snap => {
+    const box = document.getElementById("messages"); box.innerHTML = "";
+    snap.forEach(d => {
+        const m = d.data();
+        const typeClass = m.isTopic ? 'topic-msg' : (m.isSystem ? 'sys-msg' : '');
+        box.innerHTML += `<div class="message ${typeClass}">${m.isSystem ? '' : `<b style="color:${m.color}">${m.user}:</b> `}${m.text}</div>`;
+    });
+    box.scrollTop = box.scrollHeight;
+});
+
+/* ---------------- RE-ADDED CONSENT LOGIC ---------------- */
+document.getElementById("startBtn").onclick = async () => {
+    await setDoc(doc(db, "game", "lobby"), { requester: username, voters: [username], active: true });
+};
+document.getElementById("joinBtn").onclick = async () => {
+    await updateDoc(doc(db, "game", "lobby"), { voters: arrayUnion(username) });
+    document.getElementById("inviteBox").style.display = "none";
+};
+onSnapshot(doc(db, "game", "lobby"), async snap => {
+    const data = snap.data();
+    if(!data || !data.active) { document.getElementById("inviteBox").style.display = "none"; return; }
+    if(!data.voters.includes(username)) {
+        document.getElementById("inviteText").textContent = `${data.requester} wants to play!`;
+        document.getElementById("inviteBox").style.display = "block";
+    }
+    if(data.voters.length >= 2) {
+        const users = await getDocs(collection(db, "users"));
+        if(myID === users.docs.map(d => d.id).sort()[0]) {
+            await setDoc(doc(db, "game", "session"), { phase: "rules", timerEnd: Date.now() + 15000, active: true });
+            await setDoc(doc(db, "game", "lobby"), { active: false });
+        }
     }
 });
 
-window.sendMessage = async () => {
+document.getElementById("startResetVote").onclick = async () => { await setDoc(doc(db, "game", "reset"), { voters: [username], active: true }); };
+document.getElementById("resetYesBtn").onclick = async () => { await updateDoc(doc(db, "game", "reset"), { voters: arrayUnion(username) }); };
+onSnapshot(doc(db, "game", "reset"), async snap => {
+    const data = snap.data();
+    if(!data || !data.active) { document.getElementById("resetBox").style.display = "none"; return; }
+    document.getElementById("resetBox").style.display = "block";
+    document.getElementById("resetCount").textContent = data.voters.length;
+    if(data.voters.length >= 2) {
+        const users = await getDocs(collection(db, "users"));
+        if(myID === users.docs.map(d => d.id).sort()[0]) {
+            const msgs = await getDocs(collection(db, "messages"));
+            for(const m of msgs.docs) await deleteDoc(doc(db, "messages", m.id));
+            await setDoc(doc(db, "game", "session"), { active: false });
+            await setDoc(doc(db, "game", "reset"), { active: false });
+            location.reload();
+        }
+    }
+});
+
+window.sendMessage = async function() {
     const input = document.getElementById("messageInput");
     const text = input.value.trim();
-    if (!text) return;
-
-    if (text.startsWith("/vote ")) {
-        const target = text.replace("/vote ", "");
-        input.value = "";
-        await postSys(`🗳️ <b>${username}</b> voted for <b>${target}</b>!`);
-    } else if (text.startsWith("/kill ")) {
-        const target = text.replace("/kill ", "");
-        input.value = "";
-        const gSnap = await getDoc(doc(db, "game", "session"));
-        if (isImposter && gSnap.data().round >= 2) {
-            await postSys(`🩸 <b>ELIMINATION:</b> ${target} was killed!`);
-        } else {
-            postLocalSys("❌ You cannot kill yet.");
-        }
-    } else {
-        await addDoc(collection(db, "messages"), { user: username, text: text, time: Date.now(), color: myColor });
-        input.value = "";
-    }
-};
-
+    if(!text || myStatus === "dead") { input.value = ""; return; }
+    await addDoc(collection(db, "messages"), { user: username, text, time: Date.now(), color: myColor });
+    input.value = "";
+}
 document.getElementById("sendBtn").onclick = window.sendMessage;
 document.getElementById("messageInput").onkeydown = (e) => { if(e.key === "Enter") window.sendMessage(); };
 
-onSnapshot(query(collection(db, "messages"), orderBy("time")), (snap) => {
-    const mDiv = document.getElementById("messages");
-    mDiv.innerHTML = "";
+onSnapshot(collection(db, "users"), snap => {
+    const list = document.getElementById("playerList"); list.innerHTML = "";
+    document.getElementById("playerCount").textContent = snap.size;
     snap.forEach(d => {
-        const m = d.data();
-        mDiv.innerHTML += `<div class="message ${m.isSystem ? 'sys-msg' : ''}" style="color:${m.isSystem ? 'black' : (m.color || 'white')}">${m.isSystem ? '' : `<b>${m.user}:</b> `}${m.text}</div>`;
+        const u = d.data(); if(u.id === myID) myStatus = u.status;
+        list.innerHTML += `<div style="color:${u.status==='dead'?'#777':u.color}">${u.status==='dead'?'💀':'●'} ${u.username}</div>`;
     });
-    mDiv.scrollTop = mDiv.scrollHeight;
 });
-
-onSnapshot(collection(db, "users"), (snap) => {
-    const listDiv = document.getElementById("playerList");
-    let count = 0;
-    listDiv.innerHTML = "";
-    snap.forEach(d => {
-        const u = d.data();
-        count++;
-        listDiv.innerHTML += `<div style="color:${u.color}; padding: 2px 0;">● ${u.username}</div>`;
-    });
-    document.getElementById("playerCount").textContent = count;
-});
-
-window.resetGameManually = async () => {
-    await setDoc(doc(db, "game", "session"), { rolesActive: false, round: 1 });
-    await setDoc(doc(db, "game", "request"), { active: false });
-    const readySnap = await getDocs(collection(db, "readyPlayers"));
-    const batch = writeBatch(db);
-    readySnap.forEach(d => batch.delete(d.ref));
-    await batch.commit();
-    await postSys("🧹 Room reset.");
-};
-
-if (username) {
-    document.getElementById("chatApp").style.display = "flex";
-    document.getElementById("loginScreen").style.display = "none";
-    document.getElementById("userDisplay").textContent = username;
-    document.getElementById("userDisplay").style.color = myColor;
-}
 </script>
 </body>
-</html>s
+</html>
