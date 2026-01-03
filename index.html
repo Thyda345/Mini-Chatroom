@@ -3,17 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Room - Topic Edition</title>
+    <title>Mini Room</title>
     <style>
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0a0a0c; color: #e0e0e0; overflow: hidden; }
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #0a0a0c; 
+            color: #e0e0e0;
+            overflow: hidden; 
+        }
 
-        /* Overlay UI */
         .overlay-card { 
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); 
-            background: #2c3e50; border: 2px solid #3498db; padding: 15px 25px; 
-            border-radius: 12px; z-index: 9999; display: none; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: fixed; 
+            top: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: #2c3e50; 
+            border: 2px solid #3498db; 
+            padding: 15px 25px; 
+            border-radius: 12px; 
+            z-index: 9999; 
+            display: none; 
+            text-align: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
         }
 
         #loginScreen { 
@@ -31,9 +44,10 @@
             content: ""; 
             position: absolute; 
             inset: 0; 
-            background: rgba(0, 0, 0, 0.75); 
+            background: #000000bf; 
             backdrop-filter: blur(4px); 
         }
+
         #loginContainer { 
             position: relative; 
             z-index: 2; 
@@ -46,7 +60,7 @@
             margin: 10px; 
             padding: 15px; 
             width: 280px; 
-            border-radius: 12px; 
+            border-radius: 12px;
             border: 1px solid #444; 
             background: #1a1a1a; 
             color: white; 
@@ -69,13 +83,12 @@
             flex-direction: column; 
         }
 
-
         #playerList { 
             flex: 1; 
             overflow-y: auto; 
             margin-top: 10px; 
         }
-        
+
         .chat-main { 
             flex: 1; 
             display: flex; 
@@ -91,7 +104,14 @@
             background: #16161d; 
             border-bottom: 1px solid #2d2d3d; 
         }
-        
+
+        .logo { 
+            width: 35px; 
+            height: 35px; 
+            border-radius: 50%; 
+            border: 2px solid #3498db; 
+        }
+
         #phaseTimerDisplay { 
             background: #e74c3c; 
             color: white; 
@@ -115,7 +135,7 @@
         .message { 
             padding: 10px 15px; 
             border-radius: 12px; 
-            background: rgba(255, 255, 255, 0.05); 
+            background: #ffffff0d; 
             max-width: 85%; 
         }
 
@@ -123,7 +143,7 @@
             background: #f1c40f !important; 
             color: #000 !important; 
             font-weight: 900; 
-            text-align: center; 
+            text-align: center;
             max-width: 100%; 
             border: 2px solid #000; 
         }
@@ -145,7 +165,7 @@
 
         .inputBar input { 
             flex: 1; 
-            padding: 14px;
+            padding: 14px; 
             border-radius: 10px; 
             border: 1px solid #3d3d4d; 
             background: #0a0a0c; 
@@ -159,19 +179,44 @@
             font-weight: bold; 
             padding: 10px 20px; 
         }
-        
+
+        .joinBtn{ 
+            background:#2ecc71; 
+            color:white; 
+        }
+
+        .cancelBtn{ 
+            background:#e74c3c; 
+            color:white; 
+        }
+
+        .loginBtn{ 
+            background:#3498db; 
+            color:white; 
+            width:280px; 
+            margin-top: 10px;
+        }
+
+        .impAlert{ 
+            background:#e74c3c!important; 
+            color:white!important; 
+        }
+
+        .dead-player { 
+            text-decoration: line-through; 
+            color: #666 !important; 
+        }
+
     </style>
 </head>
 <body>
 
 <div id="inviteBox" class="overlay-card">
     <p id="inviteText">Invitation</p>
-    <button id="joinBtn" style="background:#2ecc71; color:white;">ACCEPT & JOIN</button>
-</div>
-
-<div id="resetBox" class="overlay-card" style="border-color: #e67e22;">
-    <p>Reset Game? (<span id="resetCount">0</span>/2 Votes)</p>
-    <button id="resetYesBtn" style="background:#e67e22; color:white;">VOTE YES</button>
+    <div style="display:flex; gap:10px; justify-content:center;">
+        <button id="joinBtn" class="joinBtn">ACCEPT</button>
+        <button id="cancelBtn" class="cancelBtn">CANCEL</button>
+    </div>
 </div>
 
 <div id="loginScreen">
@@ -179,7 +224,7 @@
         <h1 style="color:white; letter-spacing: 5px;">MINI ROOM</h1>
         <input id="usernameInput" placeholder="Enter Username...">
         <input type="color" id="colorPicker" value="#3498db" style="height: 50px;">
-        <button id="loginBtn" style="background:#3498db; color:white; width:280px; margin-top: 10px;">ENTER SYSTEM</button>
+        <button id="loginBtn" class="loginBtn">ENTER SYSTEM</button>
     </div>
 </div>
 
@@ -187,12 +232,14 @@
     <div class="sidebar">
         <h3>ONLINE (<span id="playerCount">0</span>)</h3>
         <div id="playerList"></div>
-        <button id="startResetVote" style="background:#e67e22; color:white; font-size:11px; margin-top:10px;">VOTE RESET</button>
+        <button id="resetGameBtn" style="background:#e67e22; color:white; font-size:11px; margin-top:10px; padding:5px;">RESET SYSTEM</button>
     </div>
+    
     <div class="chat-main">
         <div class="header">
             <div style="display:flex; align-items:center; gap:10px;">
-                <b style="color:#3498db;">MINI ROOM</b>
+                <img class="logo" src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbDVvbThmd2lwc3R0d3I0aXR0MmN4eG4zdzB5eG1uenNybTZteHY2aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CQ3C59W0L5lpgBWN6E/giphy.gif">
+                <span style="color:#3498db; font-weight:bold;">MINI ROOM</span>
                 <span id="phaseTimerDisplay"></span>
             </div>
             <button id="logoutBtn" style="background:#e74c3c; color:white; padding:5px 10px;">LEAVE</button>
@@ -210,7 +257,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, updateDoc, deleteDoc, getDocs, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, updateDoc, deleteDoc, getDocs, arrayUnion, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyA3wCv1DIdjlPS-zEVQJXhjYsiC3G2dBJY",
@@ -221,173 +268,248 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Global Variables
 let myID = localStorage.getItem("myID") || Math.random().toString(36).slice(2);
 localStorage.setItem("myID", myID);
 let username = localStorage.getItem("username") || "";
 let myColor = localStorage.getItem("userColor") || "#3498db";
-let myStatus = "alive";
-let isImposter = false;
-let currentPhase = "";
 let countdownInterval = null;
+let lastKillTime = 0; 
+let currentImposter = "";
+let isDead = false;
 
-const TOPICS = [
-    "Haewon's bsdm",
-    "Crush",
-    "ex",
-    "Sugar Daddy",
-    "Emo",
-    "Ariana Grande",
-    "Bruno Mars",
-    "Daniel Caesar",
-    "Bathroom",
-    "Window",
-    "Phone",
-    "Goku's panties"
-];
 
-if(username) {
-    document.getElementById("loginScreen").style.display="none";
-    document.getElementById("chatApp").style.display="flex";
-}
+/* -----------------TOPIC GAME--------------------*/
+const TOPICS = ["Haewon's bsdm", "Crush", "ex", "Sugar Daddy", "Emo", "Ariana Grande", "Bruno Mars", "Daniel Caesar", "Bathroom", "Window", "Phone", "Goku's panties"];
 
 async function postSys(text, isTopic = false) {
-    await addDoc(collection(db, "messages"), { 
-        user: "SYSTEM", text, time: Date.now(), isSystem: true, isTopic 
-    });
+    await addDoc(collection(db, "messages"), { user: "SYSTEM", text, time: Date.now(), isSystem: true, isTopic });
 }
 
-// Fixed Login
+/* -----------------LOGIN------------------------*/
 document.getElementById("loginBtn").onclick = async () => {
-    const name = document.getElementById("usernameInput").value.trim();
-    if(!name) return;
-    localStorage.setItem("username", name);
-    localStorage.setItem("userColor", document.getElementById("colorPicker").value);
-    await setDoc(doc(db, "users", myID), { username: name, color: document.getElementById("colorPicker").value, status: "alive", id: myID });
+    const userVal = document.getElementById("usernameInput").value.trim();
+    if (!userVal) return;
+    username = userVal;
+    myColor = document.getElementById("colorPicker").value;
+    localStorage.setItem("username", username);
+    localStorage.setItem("userColor", myColor);
+    
+    await postSys(`✨ ${username} joined the system.`);
+    await setDoc(doc(db, "users", myID), { username, color: myColor, isDead: false });
     location.reload();
 };
 
-/* ---------------- GAME LOOP ---------------- */
+/*----------------------LEAVE---------------------*/
+document.getElementById("logoutBtn").onclick = async () => {
+    if(username) await postSys(`🚪 ${username} left the system.`);
+    await deleteDoc(doc(db, "users", myID));
+    localStorage.removeItem("username");
+    location.reload();
+};
 
-onSnapshot(doc(db, "game", "session"), async snap => {
-    const data = snap.data();
-    if(!data || !data.active) return;
-    
-    currentPhase = data.phase;
-    isImposter = (username === data.imposter);
+if (username) {
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("chatApp").style.display = "flex";
+    setDoc(doc(db, "users", myID), { username, color: myColor }, { merge: true });
+}
 
-    if(data.phase === "reveal") {
-        const roleMsg = isImposter ? "🤫 YOU ARE THE IMPOSTER!" : "😇 YOU ARE A CIVILIAN.";
-        document.getElementById("messages").innerHTML += `<div class="message sys-msg" style="background:#9b59b6 !important; color:white !important;">${roleMsg}</div>`;
-    }
+/* ---------------- CHAT LOGIC --------------- */
+const sendMessage = async () => {
+    if (isDead) return;
+    const input = document.getElementById("messageInput");
+    let text = input.value.trim();
+    if (!text) return;
 
-    if(countdownInterval) clearInterval(countdownInterval);
-    countdownInterval = setInterval(async () => {
-        const remaining = Math.max(0, Math.floor((data.timerEnd - Date.now())/1000));
-        document.getElementById("phaseTimerDisplay").style.display = "block";
-        document.getElementById("phaseTimerDisplay").textContent = remaining + "s";
-
-        if(remaining <= 0) {
-            clearInterval(countdownInterval);
+    // 1. VOTE COMMAND
+    if (text.startsWith("/vote ")) {
+        const target = text.replace("/vote ", "").trim();
+        await setDoc(doc(db, "votes", myID), { voter: username, target: target });
+        await addDoc(collection(db, "messages"), { user: username, text: `🗳️ has voted for ${target}.`, time: Date.now(), color: myColor });
+    } 
+    // 2. KILL COMMAND
+    else if (text.startsWith("/kill ") && username === currentImposter) {
+        const now = Date.now();
+        const cooldownTime = 30000;
+        if (now - lastKillTime < cooldownTime) {
+            const wait = Math.ceil((cooldownTime - (now - lastKillTime)) / 1000);
+            alert(`⏳ Kill on cooldown! Wait ${wait}s`);
+        } else {
+            const victimName = text.replace("/kill ", "").trim();
             const users = await getDocs(collection(db, "users"));
-            const host = users.docs.map(d => d.id).sort()[0];
-
-            if(myID === host) {
-                if(data.phase === "rules") {
-                    const names = users.docs.map(u => u.data().username);
-                    const imp = names[Math.floor(Math.random()*names.length)];
-                    await updateDoc(doc(db, "game", "session"), { phase: "reveal", timerEnd: Date.now() + 5000, imposter: imp });
-                } else if(data.phase === "reveal") {
-                    const randomTopic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
-                    await postSys(`🗣️ DISCUSSION START! TOPIC: ${randomTopic}`, true);
-                    await updateDoc(doc(db, "game", "session"), { phase: "discussion", timerEnd: Date.now() + 25000 });
-                } else if(data.phase === "discussion") {
-                    await postSys("🗳️ VOTING START! /vote [Name]");
-                    await updateDoc(doc(db, "game", "session"), { phase: "voting", timerEnd: Date.now() + 20000 });
-                } else if(data.phase === "voting") {
-                    await postSys("🔪 IMPOSTER ROUND!");
-                    await updateDoc(doc(db, "game", "session"), { phase: "round2", timerEnd: Date.now() + 15000 });
-                } else if(data.phase === "round2") {
-                    const randomTopic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
-                    await postSys(`🔄 ROUND OVER. NEW TOPIC: ${randomTopic}`, true);
-                    await updateDoc(doc(db, "game", "session"), { phase: "discussion", timerEnd: Date.now() + 25000 });
-                }
+            const victimDoc = users.docs.find(u => u.data().username === victimName);
+            if (victimDoc && victimDoc.data().username !== username) {
+                lastKillTime = now;
+                await updateDoc(doc(db, "users", victimDoc.id), { isDead: true });
+                await postSys(`🩸 ${victimName} was ELIMINATED!`);
             }
         }
-    }, 1000);
-});
+    } 
+    // 3. NORMAL MESSAGE
+    else {
+        await addDoc(collection(db, "messages"), { user: username, text, time: Date.now(), color: myColor });
+    }
+    input.value = "";
+};
 
-// Message Rendering with Topic Support
+document.getElementById("sendBtn").onclick = sendMessage;
+document.getElementById("messageInput").onkeydown = (e) => { if (e.key === "Enter") sendMessage(); };
+
 onSnapshot(query(collection(db, "messages"), orderBy("time")), snap => {
-    const box = document.getElementById("messages"); box.innerHTML = "";
+    const box = document.getElementById("messages");
+    box.innerHTML = "";
     snap.forEach(d => {
         const m = d.data();
         const typeClass = m.isTopic ? 'topic-msg' : (m.isSystem ? 'sys-msg' : '');
-        box.innerHTML += `<div class="message ${typeClass}">${m.isSystem ? '' : `<b style="color:${m.color}">${m.user}:</b> `}${m.text}</div>`;
+        const item = document.createElement("div");
+        item.className = `message ${typeClass}`;
+        item.innerHTML = m.isSystem ? m.text : `<b style="color:${m.color}">${m.user}:</b> ${m.text}`;
+        box.appendChild(item);
     });
     box.scrollTop = box.scrollHeight;
 });
 
-/* ---------------- RE-ADDED CONSENT LOGIC ---------------- */
+/* --- PLAYER LIST & STATUS --- */
+onSnapshot(collection(db, "users"), snap => {
+    const list = document.getElementById("playerList");
+    list.innerHTML = "";
+    document.getElementById("playerCount").textContent = snap.size;
+    snap.forEach(d => {
+        const u = d.data();
+        if (d.id === myID) isDead = u.isDead || false;
+        const p = document.createElement("div");
+        p.style.color = u.color;
+        if (u.isDead) p.className = "dead-player";
+        p.textContent = (u.isDead ? "💀 " : "● ") + u.username;
+        list.appendChild(p);
+    });
+});
+
+/* --- GAME LOGIC --- */
 document.getElementById("startBtn").onclick = async () => {
-    await setDoc(doc(db, "game", "lobby"), { requester: username, voters: [username], active: true });
+    await setDoc(doc(db, "game", "lobby"), { requester: username, voters: [username], active: true, timestamp: Date.now() });
 };
+
 document.getElementById("joinBtn").onclick = async () => {
     await updateDoc(doc(db, "game", "lobby"), { voters: arrayUnion(username) });
     document.getElementById("inviteBox").style.display = "none";
 };
+
+document.getElementById("cancelBtn").onclick = () => document.getElementById("inviteBox").style.display = "none";
+
 onSnapshot(doc(db, "game", "lobby"), async snap => {
     const data = snap.data();
-    if(!data || !data.active) { document.getElementById("inviteBox").style.display = "none"; return; }
-    if(!data.voters.includes(username)) {
-        document.getElementById("inviteText").textContent = `${data.requester} wants to play!`;
+    if (!data || !data.active) { document.getElementById("inviteBox").style.display = "none"; return; }
+    if (!data.voters.includes(username)) {
+        document.getElementById("inviteText").textContent = `${data.requester} INVITED YOU TO PLAY`;
         document.getElementById("inviteBox").style.display = "block";
     }
-    if(data.voters.length >= 2) {
+    if (data.voters.length >= 2) {
         const users = await getDocs(collection(db, "users"));
-        if(myID === users.docs.map(d => d.id).sort()[0]) {
-            await setDoc(doc(db, "game", "session"), { phase: "rules", timerEnd: Date.now() + 15000, active: true });
-            await setDoc(doc(db, "game", "lobby"), { active: false });
+        const host = users.docs.map(d => d.id).sort()[0];
+        if (myID === host) {
+            const votesSnap = await getDocs(collection(db, "votes"));
+            const batch = writeBatch(db);
+            votesSnap.forEach(v => batch.delete(v.ref));
+
+
+            // Reset deaths for new game
+            const allUsers = await getDocs(collection(db, "users"));
+            allUsers.forEach(u => batch.update(u.ref, { isDead: false }));
+            await batch.commit();
+
+            await setDoc(doc(db, "game", "session"), { phase: "rules", timerEnd: Date.now() + 15000, active: true, imposter: "" });
+            await updateDoc(doc(db, "game", "lobby"), { active: false });
         }
     }
 });
 
-document.getElementById("startResetVote").onclick = async () => { await setDoc(doc(db, "game", "reset"), { voters: [username], active: true }); };
-document.getElementById("resetYesBtn").onclick = async () => { await updateDoc(doc(db, "game", "reset"), { voters: arrayUnion(username) }); };
-onSnapshot(doc(db, "game", "reset"), async snap => {
+onSnapshot(doc(db, "game", "session"), async snap => {
     const data = snap.data();
-    if(!data || !data.active) { document.getElementById("resetBox").style.display = "none"; return; }
-    document.getElementById("resetBox").style.display = "block";
-    document.getElementById("resetCount").textContent = data.voters.length;
-    if(data.voters.length >= 2) {
-        const users = await getDocs(collection(db, "users"));
-        if(myID === users.docs.map(d => d.id).sort()[0]) {
-            const msgs = await getDocs(collection(db, "messages"));
-            for(const m of msgs.docs) await deleteDoc(doc(db, "messages", m.id));
-            await setDoc(doc(db, "game", "session"), { active: false });
-            await setDoc(doc(db, "game", "reset"), { active: false });
-            location.reload();
+    if (!data || !data.active) { 
+        document.getElementById("phaseTimerDisplay").style.display = "none"; 
+        currentImposter = "";
+        return; 
+    }
+    
+    currentImposter = data.imposter;
+    const isImposter = (username === currentImposter);
+    
+    if (countdownInterval) clearInterval(countdownInterval);
+    countdownInterval = setInterval(async () => {
+        const remaining = Math.max(0, Math.floor((data.timerEnd - Date.now()) / 1000));
+        const timerDisplay = document.getElementById("phaseTimerDisplay");
+        timerDisplay.style.display = "block";
+        timerDisplay.textContent = remaining + "s";
+        
+        if (remaining <= 0) {
+            clearInterval(countdownInterval);
+            const users = await getDocs(collection(db, "users"));
+            const host = users.docs.map(d => d.id).sort()[0];
+            
+            if (myID === host) {
+                if (data.phase === "rules") {
+                    const names = users.docs.map(u => u.data().username);
+                    const imp = names[Math.floor(Math.random() * names.length)];
+                    await postSys("🔍 Rules finished. Revealing roles and topic now...");
+                    await updateDoc(doc(db, "game", "session"), { phase: "reveal", timerEnd: Date.now() +10000, imposter: imp });
+                } else if (data.phase === "reveal") {
+                    const randomTopic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+                    await postSys(`🗣️ TOPIC: ${randomTopic}`, true);
+                    await postSys("💬 DISCUSSION START! (30s)");
+                    await updateDoc(doc(db, "game", "session"), { phase: "discussion", timerEnd: Date.now() + 30000 });
+                } else if (data.phase === "discussion") {
+                    await postSys("🗳️ VOTING START! (15s) Use /vote [Name]");
+                    await updateDoc(doc(db, "game", "session"), { phase: "voting", timerEnd: Date.now() + 15000 });
+                } else if (data.phase === "voting") {
+                    const votesSnap = await getDocs(collection(db, "votes"));
+                    let voteCounts = {};
+                    votesSnap.forEach(v => {
+                        const target = v.data().target;
+                        voteCounts[target] = (voteCounts[target] || 0) + 1;
+                    });
+                    let winner = null; let max = 0;
+                    for (let name in voteCounts) { if (voteCounts[name] > max) { max = voteCounts[name]; winner = name; } }
+                    
+                    if (winner) {
+                        const isImp = (winner === data.imposter);
+                        await postSys(`🚨 RESULT: ${winner} was voted out!`);
+                        await postSys(isImp ? "🎉 CREW WINS!" : "💀 IMPOSTER WINS!");
+                    } else { await postSys("🚨 RESULT: No one voted. Imposter wins!"); }
+                    
+                    await updateDoc(doc(db, "game", "session"), { phase: "cooldown", timerEnd: Date.now() + 15000 });
+                } else if (data.phase === "cooldown") {
+                    await updateDoc(doc(db, "game", "session"), { active: false });
+                }
+            }
+        }
+    }, 1000);
+
+    if (data.phase === "rules" && !document.body.dataset.phaseAlerted) {
+        await postSys("📖 RULES: Imposter must blend in. Crew must find them.");
+        document.body.dataset.phaseAlerted = "true";
+    } else if (data.phase !== "rules") { document.body.dataset.phaseAlerted = ""; }
+
+    if (data.phase === "reveal" && isImposter) {
+        const box = document.getElementById("messages");
+        if (!box.innerHTML.includes("YOU ARE THE IMPOSTER")) {
+            const alertDiv = document.createElement("div");
+            alertDiv.className = "message sys-msg impAlert";
+            alertDiv.textContent = "⚠️ SYSTEM: YOU ARE THE IMPOSTER!";
+            box.appendChild(alertDiv);
+            box.scrollTop = box.scrollHeight;
         }
     }
 });
 
-window.sendMessage = async function() {
-    const input = document.getElementById("messageInput");
-    const text = input.value.trim();
-    if(!text || myStatus === "dead") { input.value = ""; return; }
-    await addDoc(collection(db, "messages"), { user: username, text, time: Date.now(), color: myColor });
-    input.value = "";
-}
-document.getElementById("sendBtn").onclick = window.sendMessage;
-document.getElementById("messageInput").onkeydown = (e) => { if(e.key === "Enter") window.sendMessage(); };
-
-onSnapshot(collection(db, "users"), snap => {
-    const list = document.getElementById("playerList"); list.innerHTML = "";
-    document.getElementById("playerCount").textContent = snap.size;
-    snap.forEach(d => {
-        const u = d.data(); if(u.id === myID) myStatus = u.status;
-        list.innerHTML += `<div style="color:${u.status==='dead'?'#777':u.color}">${u.status==='dead'?'💀':'●'} ${u.username}</div>`;
-    });
-});
+document.getElementById("resetGameBtn").onclick = async () => {
+    const batch = writeBatch(db);
+    const msgs = await getDocs(collection(db, "messages"));
+    msgs.forEach(m => batch.delete(m.ref));
+    await batch.commit();
+    await setDoc(doc(db, "game", "session"), { active: false });
+    await setDoc(doc(db, "game", "lobby"), { active: false });
+};
 </script>
 </body>
 </html>
